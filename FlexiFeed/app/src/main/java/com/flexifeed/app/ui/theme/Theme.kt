@@ -42,9 +42,29 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun FlexiFeedTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    primaryColor: Color? = null,
+    accentColor: Color? = null,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val baseScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val effectivePrimary = primaryColor ?: baseScheme.primary
+    val effectiveSecondary = accentColor ?: baseScheme.secondary
+
+    // Calculate luminance for contrast: 0.299*R + 0.587*G + 0.114*B
+    val primaryLum = 0.299f * effectivePrimary.red + 0.587f * effectivePrimary.green + 0.114f * effectivePrimary.blue
+    val secondaryLum = 0.299f * effectiveSecondary.red + 0.587f * effectiveSecondary.green + 0.114f * effectiveSecondary.blue
+
+    val onPrimaryColor = if (primaryLum > 0.55f) Color(0xFF0F172A) else Color.White
+    val onSecondaryColor = if (secondaryLum > 0.55f) Color(0xFF0F172A) else Color.White
+
+    val colorScheme = baseScheme.copy(
+        primary = effectivePrimary,
+        onPrimary = onPrimaryColor,
+        secondary = effectiveSecondary,
+        onSecondary = onSecondaryColor,
+        primaryContainer = effectivePrimary.copy(alpha = if (darkTheme) 0.25f else 0.15f),
+        onPrimaryContainer = if (darkTheme && primaryLum < 0.55f) effectivePrimary else onPrimaryColor
+    )
 
     MaterialTheme(
         colorScheme = colorScheme,

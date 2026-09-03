@@ -50,7 +50,6 @@ import coil.request.ImageRequest
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIConstants
-import com.flexifeed.app.ui.theme.CoralSale
 import kotlinx.coroutines.delay
 
 @Composable
@@ -127,8 +126,8 @@ fun CountdownBadge(remainingSeconds: Long) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(CoralSale.copy(alpha = 0.12f))
-            .border(1.dp, CoralSale.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f))
+            .border(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -136,12 +135,12 @@ fun CountdownBadge(remainingSeconds: Long) {
         Icon(
             imageVector = Icons.Default.AccessTime,
             contentDescription = "Flash Sale Countdown",
-            tint = CoralSale,
+            tint = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.size(14.dp)
         )
         Text(
             text = timeString,
-            color = CoralSale,
+            color = MaterialTheme.colorScheme.secondary,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.5.sp
@@ -221,12 +220,12 @@ fun ProductCardCompact(
                         .padding(4.dp)
                         .align(Alignment.TopStart)
                         .clip(RoundedCornerShape(4.dp))
-                        .background(CoralSale)
+                        .background(MaterialTheme.colorScheme.secondary)
                         .padding(horizontal = 4.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = "SALE",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -256,7 +255,7 @@ fun ProductCardCompact(
                     text = price,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = CoralSale
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 if (originalPrice.isNotEmpty()) {
                     Text(

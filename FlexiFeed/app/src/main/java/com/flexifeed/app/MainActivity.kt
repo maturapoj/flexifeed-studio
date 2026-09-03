@@ -8,10 +8,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -20,8 +24,10 @@ import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.ui.home.CartViewModel
 import com.flexifeed.app.ui.home.HomeScreen
 import com.flexifeed.app.ui.home.HomeViewModel
+import com.flexifeed.app.ui.home.SDUIFeedUiState
 import com.flexifeed.app.ui.sdui.ActionDispatcher
 import com.flexifeed.app.ui.theme.FlexiFeedTheme
+import com.flexifeed.app.ui.theme.parseHexColorOrNull
 
 class MainActivity : ComponentActivity() {
 
@@ -36,7 +42,18 @@ class MainActivity : ComponentActivity() {
         handleIncomingIntent(intent)
 
         setContent {
-            FlexiFeedTheme {
+            val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+            val sduiTheme = (uiState as? SDUIFeedUiState.Success)?.screen?.theme
+
+            val isDark = sduiTheme?.isDarkMode ?: isSystemInDarkTheme()
+            val primaryColor = parseHexColorOrNull(sduiTheme?.primaryColorHex)
+            val accentColor = parseHexColorOrNull(sduiTheme?.accentColorHex)
+
+            FlexiFeedTheme(
+                darkTheme = isDark,
+                primaryColor = primaryColor,
+                accentColor = accentColor
+            ) {
                 val navController = rememberNavController()
                 val actionDispatcher = remember {
                     ActionDispatcher(
@@ -46,7 +63,10 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                Surface(modifier = Modifier.fillMaxSize()) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
                     HomeScreen(
                         viewModel = homeViewModel,
                         cartViewModel = cartViewModel,
