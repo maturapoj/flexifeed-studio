@@ -26,7 +26,7 @@ class SDUIRepository(
         // Attempt live fetch via remote SDUIService (Retrofit) first
         return try {
             val responseDTO = if (remoteService is RemoteSDUIService) {
-                remoteService.getHomeFeedDTO()
+                remoteService.getHomeFeedDTO(campaign)
             } else {
                 val liveJson = remoteService.getHomeFeed(campaign)
                 gson.fromJson(liveJson, SDUIResponseDTO::class.java)

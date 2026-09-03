@@ -1,0 +1,126 @@
+{
+  "screen": "HOME_FEED",
+  "version": "1.2",
+  "theme": {
+    "primaryColor": "#ffffff",
+    "accentColor": "#f97316",
+    "mode": "LIGHT"
+  },
+  "sections": [
+    {
+      "id": "sec_carousel_tech",
+      "type": "CAROUSEL",
+      "props": {
+        "autoScrollInterval": 3000
+      },
+      "items": [
+        {
+          "id": "banner_tech_weekend",
+          "imageUrl": "https://picsum.photos/id/3/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/tech-weekend"
+            }
+          }
+        },
+        {
+          "id": "banner_cyber_deals",
+          "imageUrl": "https://picsum.photos/id/48/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/cyber-deals"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sec_flash_sale_tech",
+      "type": "HORIZONTAL_LIST",
+      "props": {
+        "title": "⚡ Midday Tech Flash",
+        "countdownRemainingSec": 3600
+      },
+      "items": [
+        {
+          "id": "prod_301",
+          "type": "PRODUCT_CARD_COMPACT",
+          "props": {
+            "name": "ไมโครโฟน คอนเดนเซอร์ USB",
+            "price": "฿1,350",
+            "originalPrice": "฿2,200",
+            "thumbnailUrl": "https://picsum.photos/id/1082/200/200"
+          },
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://product/301"
+            }
+          }
+        },
+        {
+          "id": "prod_302",
+          "type": "PRODUCT_CARD_COMPACT",
+          "props": {
+            "name": "หูฟัง Gaming 7.1 Surround",
+            "price": "฿990",
+            "originalPrice": "฿1,890",
+            "thumbnailUrl": "https://picsum.photos/id/2/200/200"
+          },
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://product/302"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sec_grid_products_tech",
+      "type": "GRID_2X2",
+      "props": {
+        "title": "สินค้าไอที Best Sellers"
+      },
+      "items": [
+        {
+          "id": "prod_401",
+          "type": "PRODUCT_CARD_FULL",
+          "props": {
+            "name": "เก้าอี้ Ergonomic เพื่อสุขภาพ",
+            "price": "฿4,290",
+            "rating": 5,
+            "thumbnailUrl": "https://picsum.photos/id/42/300/300"
+          },
+          "action": {
+            "type": "ADD_TO_CART",
+            "payload": {
+              "productId": "401",
+              "quantity": 1
+            }
+          }
+        },
+        {
+          "id": "prod_402",
+          "type": "PRODUCT_CARD_FULL",
+          "props": {
+            "name": "โคมไฟหน้าจอ ScreenBar",
+            "price": "฿950",
+            "rating": 4.9,
+            "thumbnailUrl": "https://picsum.photos/id/60/300/300"
+          },
+          "action": {
+            "type": "ADD_TO_CART",
+            "payload": {
+              "productId": "402",
+              "quantity": 1
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "presetId": "tech-weekend"
+}
