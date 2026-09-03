@@ -13,6 +13,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.flexifeed.app.domain.action.AnalyticsTracker
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.ui.home.CartViewModel
@@ -23,9 +25,9 @@ import com.flexifeed.app.ui.theme.FlexiFeedTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val homeViewModel: HomeViewModel by viewModels()
-    private val cartViewModel: CartViewModel by viewModels()
-    private val analyticsTracker = AnalyticsTracker()
+    private val homeViewModel: HomeViewModel by viewModel()
+    private val cartViewModel: CartViewModel by viewModel()
+    private val analyticsTracker: AnalyticsTracker by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

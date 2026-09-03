@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import android.content.res.Configuration
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.SwapHoriz
@@ -40,12 +42,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +70,8 @@ import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.action.AnalyticsEvent
 import com.flexifeed.app.domain.action.AnalyticsTracker
 import com.flexifeed.app.domain.model.SDUIConstants
+import com.flexifeed.app.domain.model.SDUINode
+import com.flexifeed.app.domain.model.SDUIScreen
 import com.flexifeed.app.ui.components.SDUIFeedShimmer
 import com.flexifeed.app.ui.sdui.ActionDispatcher
 import com.flexifeed.app.ui.sdui.SDUIRenderer
@@ -79,7 +87,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val cartCount by cartViewModel.totalItemCount.collectAsStateWithLifecycle()
-    val cartItems by cartViewModel.cartItems.collectAsStateWithLifecycle()
+    val richCartItems by cartViewModel.items.collectAsStateWithLifecycle()
     val analyticsEvents by analyticsTracker.events.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -87,6 +95,7 @@ fun HomeScreen(
     var showCartSheet by remember { mutableStateOf(false) }
     var showAnalyticsSheet by remember { mutableStateOf(false) }
     var navigatedTargetUrl by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
     val serverThemePrimary = remember(uiState) {
         val state = uiState
@@ -217,6 +226,44 @@ fun HomeScreen(
                 onSwitchCampaign = { viewModel.switchCampaign(it) }
             )
 
+            // Real-time Search / Filter bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = {
+                    Text(
+                        text = "ค้นหาสินค้าใน Feed (เช่น หูฟัง, กล้อง, คีย์บอร์ด)...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = serverThemePrimary
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear")
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = serverThemePrimary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+
             // Content Area based on State
             when (val state = uiState) {
                 is SDUIFeedUiState.Loading -> {
@@ -224,33 +271,86 @@ fun HomeScreen(
                 }
 
                 is SDUIFeedUiState.Success -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 24.dp)
-                    ) {
-                        // Info badge explaining SDUI
-                        item {
-                            SDUIInfoBanner(
-                                screenName = state.screen.screen,
-                                version = state.screen.version,
-                                isLiveServer = state.isLiveServer
-                            )
-                        }
-
-                        // Render each SDUI Section dynamically
-                        items(state.screen.sections, key = { it.id }) { sectionNode ->
-                            SDUIRenderer(
-                                node = sectionNode,
-                                onAction = { action ->
-                                    // Intercept target navigation for in-app sheet preview
-                                    if (action.type == SDUIConstants.ActionType.NAVIGATE) {
-                                        action.getTargetUrl()?.let { targetUrl ->
-                                            navigatedTargetUrl = targetUrl
-                                        }
-                                    }
-                                    actionDispatcher.handleAction(action)
+                    val filteredSections = remember(state.screen.sections, searchQuery) {
+                        if (searchQuery.isBlank()) {
+                            state.screen.sections
+                        } else {
+                            val query = searchQuery.trim()
+                            state.screen.sections.mapNotNull { section ->
+                                val matchedItems = section.items.filter { item ->
+                                    val name = item.getString(SDUIConstants.PropKey.NAME)
+                                    val title = item.getString(SDUIConstants.PropKey.TITLE)
+                                    name.contains(query, ignoreCase = true) || title.contains(query, ignoreCase = true)
                                 }
-                            )
+                                val sectionTitle = section.getString(SDUIConstants.PropKey.TITLE)
+                                val titleMatches = sectionTitle.contains(query, ignoreCase = true)
+
+                                if (matchedItems.isNotEmpty()) {
+                                    section.copy(items = matchedItems)
+                                } else if (titleMatches) {
+                                    section
+                                } else {
+                                    null
+                                }
+                            }
+                        }
+                    }
+
+                    if (filteredSections.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "🔍 ไม่พบสินค้าที่ตรงกับ \"$searchQuery\"",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "ลองค้นหาด้วยคำอื่น เช่น หูฟัง, สมาร์ตวอทช์, คีย์บอร์ด",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                OutlinedButton(onClick = { searchQuery = "" }) {
+                                    Text("ล้างคำค้นหา")
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 24.dp)
+                        ) {
+                            // Info badge explaining SDUI
+                            item {
+                                SDUIInfoBanner(
+                                    screenName = state.screen.screen,
+                                    version = state.screen.version,
+                                    isLiveServer = state.isLiveServer
+                                )
+                            }
+
+                            // Render each SDUI Section dynamically
+                            items(filteredSections, key = { it.id }) { sectionNode ->
+                                SDUIRenderer(
+                                    node = sectionNode,
+                                    onAction = { action ->
+                                        // Intercept target navigation for in-app sheet preview
+                                        if (action.type == SDUIConstants.ActionType.NAVIGATE) {
+                                            action.getTargetUrl()?.let { targetUrl ->
+                                                navigatedTargetUrl = targetUrl
+                                            }
+                                        }
+                                        actionDispatcher.handleAction(action)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -287,15 +387,21 @@ fun HomeScreen(
         }
     }
 
-    // Modal Bottom Sheet: Cart Details
+    // Modal Bottom Sheet: Rich Interactive Cart & Checkout
     if (showCartSheet) {
         ModalBottomSheet(
             onDismissRequest = { showCartSheet = false },
             sheetState = rememberModalBottomSheetState()
         ) {
-            CartSheetContent(
-                cartItems = cartItems,
-                onClear = { cartViewModel.clearCart() },
+            CartBottomSheetContent(
+                cartItems = richCartItems.values.toList(),
+                totalCount = cartCount,
+                totalPriceFormatted = cartViewModel.calculateTotalFormatted(),
+                onIncrement = { cartViewModel.incrementQuantity(it) },
+                onDecrement = { cartViewModel.decrementQuantity(it) },
+                onRemove = { cartViewModel.removeItem(it) },
+                onClearCart = { cartViewModel.clearCart() },
+                onCheckout = { cartViewModel.checkout() },
                 onClose = { showCartSheet = false }
             )
         }
@@ -423,83 +529,85 @@ fun SDUIInfoBanner(screenName: String, version: String, isLiveServer: Boolean = 
     }
 }
 
+// ---------------------------------------------------------------------------
+// COMPOSE PREVIEWS
+// ---------------------------------------------------------------------------
+
+@Preview(name = "HomeScreen - Light", showBackground = true)
 @Composable
-fun CartSheetContent(
-    cartItems: Map<String, Int>,
-    onClear: () -> Unit,
-    onClose: () -> Unit
-) {
+fun HomeScreenPreview_Light() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = false) {
+        Surface {
+            HomeScreenPreviewSample()
+        }
+    }
+}
+
+@Preview(name = "HomeScreen - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HomeScreenPreview_Dark() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = true) {
+        Surface {
+            HomeScreenPreviewSample()
+        }
+    }
+}
+
+@Composable
+private fun HomeScreenPreviewSample() {
+    val sampleSections = listOf(
+        SDUINode(
+            id = "sec_banner",
+            type = SDUIConstants.ComponentType.CAROUSEL,
+            items = listOf(
+                SDUINode(
+                    id = "b1",
+                    type = SDUIConstants.ComponentType.CAROUSEL,
+                    props = mapOf(SDUIConstants.PropKey.IMAGE_URL to "https://picsum.photos/id/1060/800/400")
+                )
+            )
+        ),
+        SDUINode(
+            id = "sec_flash",
+            type = SDUIConstants.ComponentType.HORIZONTAL_LIST,
+            props = mapOf(
+                SDUIConstants.PropKey.TITLE to "⚡ Flash Sale ดีลเด็ด",
+                SDUIConstants.PropKey.COUNTDOWN_REMAINING_SEC to 7200L
+            ),
+            items = listOf(
+                SDUINode(
+                    id = "f1",
+                    type = SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT,
+                    props = mapOf(
+                        SDUIConstants.PropKey.NAME to "หูฟังบลูทูธไร้สาย Pro",
+                        SDUIConstants.PropKey.PRICE to "฿890",
+                        SDUIConstants.PropKey.ORIGINAL_PRICE to "฿1,590",
+                        SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                    )
+                ),
+                SDUINode(
+                    id = "f2",
+                    type = SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT,
+                    props = mapOf(
+                        SDUIConstants.PropKey.NAME to "สมาร์ตวอทช์ Ultra Fit",
+                        SDUIConstants.PropKey.PRICE to "฿1,290",
+                        SDUIConstants.PropKey.ORIGINAL_PRICE to "฿2,990",
+                        SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                    )
+                )
+            )
+        )
+    )
+
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp)
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "🛍️ ตะกร้าสินค้า (Cart)",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, contentDescription = "Close")
-            }
+        SDUIInfoBanner(screenName = "HOME_FEED", version = "1.0", isLiveServer = true)
+        sampleSections.forEach { section ->
+            SDUIRenderer(node = section, onAction = {})
         }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
-
-        if (cartItems.isEmpty()) {
-            Text(
-                text = "ยังไม่มีสินค้าในตะกร้า\nคลิกปุ่ม 'ใส่ตะกร้า' บนสินค้าเพื่อทดสอบ SDUI Action ADD_TO_CART",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 20.dp)
-            )
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                cartItems.forEach { (productId, qty) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "รหัสสินค้า #$productId",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "จำนวน: $qty ชิ้น",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedButton(
-                    onClick = onClear,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Icon(Icons.Default.DeleteOutline, contentDescription = "Clear")
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("ล้างตะกร้าสินค้า")
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(30.dp))
     }
 }
 

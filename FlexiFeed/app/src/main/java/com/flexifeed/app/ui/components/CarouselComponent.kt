@@ -162,3 +162,52 @@ fun CarouselComponent(
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// COMPOSE PREVIEWS
+// ---------------------------------------------------------------------------
+
+@androidx.compose.ui.tooling.preview.Preview(name = "Carousel - Light", showBackground = true)
+@Composable
+fun CarouselComponentPreview_Light() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = false) {
+        androidx.compose.material3.Surface {
+            val sampleCarousel = SDUINode(
+                id = "sec_carousel",
+                type = SDUIConstants.ComponentType.CAROUSEL,
+                props = mapOf(SDUIConstants.PropKey.AUTO_SCROLL_INTERVAL to 4000L),
+                items = listOf(
+                    SDUINode(
+                        id = "slide_1",
+                        type = SDUIConstants.ComponentType.CAROUSEL,
+                        props = mapOf(SDUIConstants.PropKey.IMAGE_URL to "https://picsum.photos/id/1060/800/400"),
+                        action = SDUIAction(
+                            type = SDUIConstants.ActionType.NAVIGATE,
+                            payload = mapOf(SDUIConstants.ActionKey.TARGET to "flexifeed://campaign/mega-sale")
+                        )
+                    ),
+                    SDUINode(
+                        id = "slide_2",
+                        type = SDUIConstants.ComponentType.CAROUSEL,
+                        props = mapOf(SDUIConstants.PropKey.IMAGE_URL to "https://picsum.photos/id/201/800/400"),
+                        action = SDUIAction(
+                            type = SDUIConstants.ActionType.NAVIGATE,
+                            payload = mapOf(SDUIConstants.ActionKey.TARGET to "flexifeed://campaign/gadgets")
+                        )
+                    )
+                )
+            )
+            CarouselComponent(node = sampleCarousel, onAction = {})
+        }
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(name = "Carousel - Dark", showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun CarouselComponentPreview_Dark() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = true) {
+        androidx.compose.material3.Surface {
+            CarouselComponentPreview_Light()
+        }
+    }
+}

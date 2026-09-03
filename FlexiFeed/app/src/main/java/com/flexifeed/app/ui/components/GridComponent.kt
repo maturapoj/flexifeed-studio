@@ -1,5 +1,6 @@
 package com.flexifeed.app.ui.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,10 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddShoppingCart
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -25,9 +29,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +46,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
@@ -43,6 +54,7 @@ import coil.request.ImageRequest
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIConstants
+import com.flexifeed.app.ui.theme.FlexiFeedTheme
 import com.flexifeed.app.ui.theme.AmberRating
 
 @Composable
@@ -108,6 +120,7 @@ fun ProductCardFull(
     val price = node.getString(SDUIConstants.PropKey.PRICE)
     val rating = node.getDouble(SDUIConstants.PropKey.RATING, 0.0)
     val imageUrl = node.resolvedImageUrl
+    var isFavorite by remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(14.dp),
@@ -161,6 +174,24 @@ fun ProductCardFull(
                         }
                     }
                 )
+
+                // Favorite Heart Button
+                IconButton(
+                    onClick = { isFavorite = !isFavorite },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.35f))
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) Color(0xFFEF4444) else Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
 
                 // Rating badge over image if present
                 if (rating > 0) {
@@ -218,7 +249,16 @@ fun ProductCardFull(
             // Add to Cart Button
             Button(
                 onClick = {
-                    node.action?.let { onAction(it) }
+                    val baseAction = node.action ?: SDUIAction(
+                        type = SDUIConstants.ActionType.ADD_TO_CART,
+                        payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to node.id)
+                    )
+                    val enrichedPayload = baseAction.payload.toMutableMap().apply {
+                        put(SDUIConstants.PropKey.NAME, name)
+                        put(SDUIConstants.PropKey.PRICE, price)
+                        put(SDUIConstants.PropKey.THUMBNAIL_URL, imageUrl)
+                    }
+                    onAction(baseAction.copy(payload = enrichedPayload))
                 },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -240,6 +280,68 @@ fun ProductCardFull(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// COMPOSE PREVIEWS
+// ---------------------------------------------------------------------------
+
+@Preview(name = "GridComponent - Light", showBackground = true)
+@Composable
+fun GridComponentPreview_Light() {
+    FlexiFeedTheme(darkTheme = false) {
+        Surface {
+            val sampleItems = listOf(
+                SDUINode(
+                    id = "p1",
+                    type = SDUIConstants.ComponentType.PRODUCT_CARD_FULL,
+                    props = mapOf(
+                        SDUIConstants.PropKey.NAME to "คีย์บอร์ดบลูทูธ Mechanical RGB",
+                        SDUIConstants.PropKey.PRICE to "฿2,490",
+                        SDUIConstants.PropKey.RATING to 4.9,
+                        SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                    ),
+                    action = SDUIAction(
+                        type = SDUIConstants.ActionType.ADD_TO_CART,
+                        payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to "p1")
+                    )
+                ),
+                SDUINode(
+                    id = "p2",
+                    type = SDUIConstants.ComponentType.PRODUCT_CARD_FULL,
+                    props = mapOf(
+                        SDUIConstants.PropKey.NAME to "เมาส์ไร้สาย Ergonomic Laser",
+                        SDUIConstants.PropKey.PRICE to "฿990",
+                        SDUIConstants.PropKey.RATING to 4.8,
+                        SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                    ),
+                    action = SDUIAction(
+                        type = SDUIConstants.ActionType.ADD_TO_CART,
+                        payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to "p2")
+                    )
+                )
+            )
+
+            val gridNode = SDUINode(
+                id = "grid_sample",
+                type = SDUIConstants.ComponentType.GRID_2X2,
+                props = mapOf(SDUIConstants.PropKey.TITLE to "สินค้าแนะนำสำหรับคุณ"),
+                items = sampleItems
+            )
+
+            GridComponent(node = gridNode, onAction = {})
+        }
+    }
+}
+
+@Preview(name = "GridComponent - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun GridComponentPreview_Dark() {
+    FlexiFeedTheme(darkTheme = true) {
+        Surface {
+            GridComponentPreview_Light()
         }
     }
 }

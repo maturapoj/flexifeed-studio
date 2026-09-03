@@ -251,3 +251,27 @@ fun GridShimmer(brush: Brush) {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// COMPOSE PREVIEWS
+// ---------------------------------------------------------------------------
+
+@androidx.compose.ui.tooling.preview.Preview(name = "Shimmer Feed - Light", showBackground = true)
+@Composable
+fun SDUIFeedShimmerPreview_Light() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = false) {
+        androidx.compose.material3.Surface {
+            SDUIFeedShimmer()
+        }
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(name = "Shimmer Feed - Dark", showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun SDUIFeedShimmerPreview_Dark() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = true) {
+        androidx.compose.material3.Surface {
+            SDUIFeedShimmer()
+        }
+    }
+}
