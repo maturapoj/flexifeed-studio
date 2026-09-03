@@ -3,6 +3,7 @@ package com.flexifeed.app
 import com.flexifeed.app.data.remote.MockSDUIService
 import com.flexifeed.app.data.repository.SDUIRepository
 import com.flexifeed.app.domain.action.SDUIAction
+import com.flexifeed.app.domain.model.SDUIConstants
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -96,54 +97,54 @@ class SDUIRepositoryTest {
         val screen = repository.parseJsonToScreen(json)
 
         // Verify Screen
-        assertEquals("HOME_FEED", screen.screen)
-        assertEquals("1.0", screen.version)
+        assertEquals(SDUIConstants.Screen.HOME_FEED, screen.screen)
+        assertEquals(SDUIConstants.Screen.DEFAULT_VERSION, screen.version)
         assertEquals(3, screen.sections.size)
 
         // Section 1: CAROUSEL
         val carouselSection = screen.sections[0]
         assertEquals("sec_carousel_01", carouselSection.id)
-        assertEquals("CAROUSEL", carouselSection.type)
-        assertEquals(4000L, carouselSection.getLong("autoScrollInterval"))
+        assertEquals(SDUIConstants.ComponentType.CAROUSEL, carouselSection.type)
+        assertEquals(4000L, carouselSection.getLong(SDUIConstants.PropKey.AUTO_SCROLL_INTERVAL))
         assertEquals(1, carouselSection.items.size)
 
         val banner = carouselSection.items[0]
         assertEquals("banner_mega_sale", banner.id)
         assertEquals("https://picsum.photos/800/400", banner.resolvedImageUrl)
         assertNotNull(banner.action)
-        assertEquals(SDUIAction.TYPE_NAVIGATE, banner.action?.type)
+        assertEquals(SDUIConstants.ActionType.NAVIGATE, banner.action?.type)
         assertEquals("flexifeed://campaign/mega-sale", banner.action?.getTargetUrl())
 
         // Section 2: HORIZONTAL_LIST
         val flashSaleSection = screen.sections[1]
         assertEquals("sec_flash_sale_02", flashSaleSection.id)
-        assertEquals("HORIZONTAL_LIST", flashSaleSection.type)
-        assertEquals("⚡ Flash Sale", flashSaleSection.getString("title"))
-        assertEquals(7200L, flashSaleSection.getLong("countdownRemainingSec"))
+        assertEquals(SDUIConstants.ComponentType.HORIZONTAL_LIST, flashSaleSection.type)
+        assertEquals("⚡ Flash Sale", flashSaleSection.getString(SDUIConstants.PropKey.TITLE))
+        assertEquals(7200L, flashSaleSection.getLong(SDUIConstants.PropKey.COUNTDOWN_REMAINING_SEC))
         assertEquals(1, flashSaleSection.items.size)
 
         val product101 = flashSaleSection.items[0]
         assertEquals("prod_101", product101.id)
-        assertEquals("PRODUCT_CARD_COMPACT", product101.type)
-        assertEquals("หูฟังบลูทูธไร้สาย", product101.getString("name"))
-        assertEquals("฿890", product101.getString("price"))
-        assertEquals("฿1,590", product101.getString("originalPrice"))
+        assertEquals(SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT, product101.type)
+        assertEquals("หูฟังบลูทูธไร้สาย", product101.getString(SDUIConstants.PropKey.NAME))
+        assertEquals("฿890", product101.getString(SDUIConstants.PropKey.PRICE))
+        assertEquals("฿1,590", product101.getString(SDUIConstants.PropKey.ORIGINAL_PRICE))
         assertEquals("flexifeed://product/101", product101.action?.getTargetUrl())
 
         // Section 3: GRID_2X2
         val gridSection = screen.sections[2]
         assertEquals("sec_grid_products_03", gridSection.id)
-        assertEquals("GRID_2X2", gridSection.type)
-        assertEquals("สินค้าแนะนำสำหรับคุณ", gridSection.getString("title"))
+        assertEquals(SDUIConstants.ComponentType.GRID_2X2, gridSection.type)
+        assertEquals("สินค้าแนะนำสำหรับคุณ", gridSection.getString(SDUIConstants.PropKey.TITLE))
         assertEquals(1, gridSection.items.size)
 
         val product201 = gridSection.items[0]
         assertEquals("prod_201", product201.id)
-        assertEquals("PRODUCT_CARD_FULL", product201.type)
-        assertEquals("คีย์บอร์ดไร้สาย Mechanical", product201.getString("name"))
-        assertEquals("฿2,490", product201.getString("price"))
-        assertEquals(4.8, product201.getDouble("rating"), 0.001)
-        assertEquals(SDUIAction.TYPE_ADD_TO_CART, product201.action?.type)
+        assertEquals(SDUIConstants.ComponentType.PRODUCT_CARD_FULL, product201.type)
+        assertEquals("คีย์บอร์ดไร้สาย Mechanical", product201.getString(SDUIConstants.PropKey.NAME))
+        assertEquals("฿2,490", product201.getString(SDUIConstants.PropKey.PRICE))
+        assertEquals(4.8, product201.getDouble(SDUIConstants.PropKey.RATING), 0.001)
+        assertEquals(SDUIConstants.ActionType.ADD_TO_CART, product201.action?.type)
         assertEquals("201", product201.action?.getProductId())
         assertEquals(1, product201.action?.getQuantity())
     }
@@ -151,7 +152,7 @@ class SDUIRepositoryTest {
     @Test
     fun testDefaultMockFeedParsesSuccessfully() {
         val screen = repository.parseJsonToScreen(MockSDUIService.DEFAULT_HOME_FEED_JSON)
-        assertEquals("HOME_FEED", screen.screen)
+        assertEquals(SDUIConstants.Screen.HOME_FEED, screen.screen)
         assertTrue(screen.sections.isNotEmpty())
         assertEquals(3, screen.sections.size)
     }
