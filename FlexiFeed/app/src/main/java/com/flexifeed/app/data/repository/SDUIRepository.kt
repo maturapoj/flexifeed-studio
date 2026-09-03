@@ -23,10 +23,14 @@ class SDUIRepository(
         private set
 
     suspend fun fetchHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): Result<SDUIScreen> {
-        // Attempt live fetch via remote SDUIService first
+        // Attempt live fetch via remote SDUIService (Retrofit) first
         return try {
-            val liveJson = remoteService.getHomeFeed(campaign)
-            val responseDTO = gson.fromJson(liveJson, SDUIResponseDTO::class.java)
+            val responseDTO = if (remoteService is RemoteSDUIService) {
+                remoteService.getHomeFeedDTO()
+            } else {
+                val liveJson = remoteService.getHomeFeed(campaign)
+                gson.fromJson(liveJson, SDUIResponseDTO::class.java)
+            }
             val screen = mapToDomain(responseDTO)
             isLiveServerConnected = true
             Result.success(screen)
