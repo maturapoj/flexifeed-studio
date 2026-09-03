@@ -50,6 +50,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.Composable
@@ -86,6 +87,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val cartCount by cartViewModel.totalItemCount.collectAsStateWithLifecycle()
     val richCartItems by cartViewModel.items.collectAsStateWithLifecycle()
     val analyticsEvents by analyticsTracker.events.collectAsStateWithLifecycle()
@@ -208,7 +210,7 @@ fun HomeScreen(
                     }
 
                     // Refresh Button
-                    IconButton(onClick = { viewModel.refreshFeed() }) {
+                    IconButton(onClick = { viewModel.refreshFeed(isPullToRefresh = true) }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh",
@@ -301,60 +303,68 @@ fun HomeScreen(
                         }
                     }
 
-                    if (filteredSections.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = { viewModel.refreshFeed(isPullToRefresh = true) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        if (filteredSections.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = "🔍 ไม่พบสินค้าที่ตรงกับ \"$searchQuery\"",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "ลองค้นหาด้วยคำอื่น เช่น หูฟัง, สมาร์ตวอทช์, คีย์บอร์ด",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                OutlinedButton(onClick = { searchQuery = "" }) {
-                                    Text("ล้างคำค้นหา")
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "🔍 ไม่พบสินค้าที่ตรงกับ \"$searchQuery\"",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "ลองค้นหาด้วยคำอื่น เช่น หูฟัง, สมาร์ตวอทช์, คีย์บอร์ด",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    OutlinedButton(onClick = { searchQuery = "" }) {
+                                        Text("ล้างคำค้นหา")
+                                    }
                                 }
                             }
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 24.dp)
-                        ) {
-                            // Info badge explaining SDUI
-                            item {
-                                SDUIInfoBanner(
-                                    screenName = state.screen.screen,
-                                    version = state.screen.version,
-                                    isLiveServer = state.isLiveServer
-                                )
-                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(bottom = 24.dp)
+                            ) {
+                                // Info badge explaining SDUI
+                                item {
+                                    SDUIInfoBanner(
+                                        screenName = state.screen.screen,
+                                        version = state.screen.version,
+                                        isLiveServer = state.isLiveServer
+                                    )
+                                }
 
-                            // Render each SDUI Section dynamically
-                            items(filteredSections, key = { it.id }) { sectionNode ->
-                                SDUIRenderer(
-                                    node = sectionNode,
-                                    onAction = { action ->
-                                        // Intercept target navigation for in-app sheet preview
-                                        if (action.type == SDUIConstants.ActionType.NAVIGATE) {
-                                            action.getTargetUrl()?.let { targetUrl ->
-                                                navigatedTargetUrl = targetUrl
+                                // Render each SDUI Section dynamically
+                                items(filteredSections, key = { it.id }) { sectionNode ->
+                                    SDUIRenderer(
+                                        node = sectionNode,
+                                        onAction = { action ->
+                                            // Intercept target navigation for in-app sheet preview
+                                            if (action.type == SDUIConstants.ActionType.NAVIGATE) {
+                                                action.getTargetUrl()?.let { targetUrl ->
+                                                    navigatedTargetUrl = targetUrl
+                                                }
                                             }
+                                            actionDispatcher.handleAction(action)
                                         }
-                                        actionDispatcher.handleAction(action)
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
