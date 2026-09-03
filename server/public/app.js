@@ -46,6 +46,10 @@ async function loadFeedFromServer() {
     if (!currentFeed.theme) {
       currentFeed.theme = { primaryColor: "#4F46E5", accentColor: "#FF3366", mode: "LIGHT" };
     }
+    const activePreset = currentFeed.presetId || (currentFeed.version === '1.2' ? 'tech-weekend' : 'mega-sale');
+    document.querySelectorAll('.btn-preset').forEach(b => {
+      b.classList.toggle('active', b.dataset.preset === activePreset);
+    });
     renderVisualBuilder();
     syncThemeInputs();
     syncJsonEditor();
@@ -72,6 +76,9 @@ async function publishFeedToServer() {
       readFromThemeBuilder();
     }
 
+    const activePreset = currentFeed.presetId || (currentFeed.version === '1.2' ? 'tech-weekend' : 'mega-sale');
+    currentFeed.presetId = activePreset;
+
     const res = await fetch('/api/v1/home-feed', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -79,7 +86,7 @@ async function publishFeedToServer() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast('🚀 บันทึกและ Publish ลง Server สำเร็จ!');
+      showToast(`🚀 บันทึกและ Publish ลง Server [${activePreset}] สำเร็จ!`);
       renderMobilePreview();
       syncJsonEditor();
     } else {
@@ -95,14 +102,18 @@ async function publishFeedToServer() {
 async function saveThemeToServer() {
   try {
     readFromThemeBuilder();
+    const activePreset = currentFeed.presetId || (currentFeed.version === '1.2' ? 'tech-weekend' : 'mega-sale');
     const res = await fetch('/api/v1/theme', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(currentFeed.theme)
+      body: JSON.stringify({
+        ...currentFeed.theme,
+        presetId: activePreset
+      })
     });
     const result = await res.json();
     if (result.success) {
-      showToast('🎨 บันทึก Theme ลง Server สำเร็จแล้ว!');
+      showToast(`🎨 บันทึก Theme สำหรับ [${activePreset === 'tech-weekend' ? 'Tech Weekend' : 'Mega Sale'}] สำเร็จแล้ว!`);
       syncJsonEditor();
       renderMobilePreview();
     } else {
@@ -117,10 +128,21 @@ async function saveThemeToServer() {
 // Switch Preset
 async function loadPreset(presetId) {
   try {
+    readFromThemeBuilder();
+    // Auto-save active theme if it changed before switching
+    const activePreset = currentFeed.presetId || (currentFeed.version === '1.2' ? 'tech-weekend' : 'mega-sale');
+    if (currentFeed.theme && activePreset && activePreset !== presetId) {
+      await fetch('/api/v1/theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...currentFeed.theme, presetId: activePreset })
+      });
+    }
+
     const res = await fetch(`/api/v1/preset/${presetId}`, { method: 'POST' });
     const result = await res.json();
     if (result.success) {
-      showToast(`Loaded preset: ${presetId}`);
+      showToast(`✨ สลับ Preset เป็น: ${presetId === 'tech-weekend' ? 'Tech Weekend' : 'Mega Sale'} (โหลด Theme เฉพาะตัวสำเร็จ)`);
       await loadFeedFromServer();
     }
   } catch (err) {

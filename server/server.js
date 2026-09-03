@@ -170,16 +170,61 @@ const PRESETS = {
   }
 };
 
+const PRESETS_DIR = path.join(__dirname, 'data', 'presets');
+if (!fs.existsSync(PRESETS_DIR)) {
+  fs.mkdirSync(PRESETS_DIR, { recursive: true });
+}
+
+// Helper to get preset with preserved customizations
+function getPreset(presetId) {
+  const pId = presetId === 'tech-weekend' ? 'tech-weekend' : 'mega-sale';
+  const presetFile = path.join(PRESETS_DIR, `${pId}.json`);
+  if (fs.existsSync(presetFile)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(presetFile, 'utf8'));
+      if (parsed && parsed.theme && parsed.sections) {
+        parsed.presetId = pId;
+        return parsed;
+      }
+    } catch (e) {
+      console.error(`Error reading preset file for ${pId}:`, e);
+    }
+  }
+  const defaultObj = JSON.parse(JSON.stringify(PRESETS[pId] || PRESETS['mega-sale']));
+  defaultObj.presetId = pId;
+  return defaultObj;
+}
+
+// Helper to save preset with customizations
+function savePreset(presetId, data) {
+  const pId = presetId === 'tech-weekend' ? 'tech-weekend' : 'mega-sale';
+  const presetFile = path.join(PRESETS_DIR, `${pId}.json`);
+  const toSave = { ...data, presetId: pId };
+  fs.writeFileSync(presetFile, JSON.stringify(toSave, null, 2), 'utf8');
+}
+
+// Seed default preset files if not existing
+for (const [id, presetObj] of Object.entries(PRESETS)) {
+  const pFile = path.join(PRESETS_DIR, `${id}.json`);
+  if (!fs.existsSync(pFile)) {
+    fs.writeFileSync(pFile, JSON.stringify({ ...presetObj, presetId: id }, null, 2), 'utf8');
+  }
+}
+
 function readCurrentFeed() {
   if (fs.existsSync(DATA_FILE)) {
     try {
       const data = fs.readFileSync(DATA_FILE, 'utf8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (!parsed.presetId) {
+        parsed.presetId = (parsed.version === '1.2' || (parsed.screen && parsed.screen.includes('TECH'))) ? 'tech-weekend' : 'mega-sale';
+      }
+      return parsed;
     } catch (e) {
       console.error('Error reading data file, using default preset:', e);
     }
   }
-  return PRESETS['mega-sale'];
+  return getPreset('mega-sale');
 }
 
 function writeCurrentFeed(feedData) {
@@ -211,10 +256,26 @@ const server = http.createServer((req, res) => {
   const urlObj = new URL(req.url, `http://${req.headers.host}`);
   const pathname = urlObj.pathname;
 
-  // API: GET /api/v1/home-feed
+  // API: GET /api/v1/home-feed (supports optional ?campaign=tech-weekend or ?campaign=mega-sale)
   if (pathname === '/api/v1/home-feed' && req.method === 'GET') {
-    const feed = readCurrentFeed();
-    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    const campaign = urlObj.searchParams.get('campaign');
+    let feed;
+    if (campaign) {
+      const lower = campaign.toLowerCase();
+      if (lower.includes('tech')) {
+        feed = getPreset('tech-weekend');
+      } else if (lower.includes('mega') || lower.includes('default')) {
+        feed = getPreset('mega-sale');
+      } else {
+        feed = readCurrentFeed();
+      }
+    } else {
+      feed = readCurrentFeed();
+    }
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    });
     res.end(JSON.stringify(feed, null, 2));
     return;
   }
@@ -235,15 +296,30 @@ const server = http.createServer((req, res) => {
       try {
         const themeData = JSON.parse(body);
         const currentFeed = readCurrentFeed();
+        const activePreset = themeData.presetId || currentFeed.presetId || (currentFeed.version === '1.2' ? 'tech-weekend' : 'mega-sale');
+
+        currentFeed.presetId = activePreset;
         currentFeed.theme = {
           primaryColor: themeData.primaryColor || currentFeed.theme?.primaryColor || '#4F46E5',
           accentColor: themeData.accentColor || currentFeed.theme?.accentColor || '#FF3366',
           mode: themeData.mode || currentFeed.theme?.mode || 'LIGHT'
         };
         writeCurrentFeed(currentFeed);
-        console.log(`[SDUI Server] Updated theme: ${JSON.stringify(currentFeed.theme)}`);
+
+        // Also persist theme permanently to this preset file!
+        const presetData = getPreset(activePreset);
+        presetData.theme = currentFeed.theme;
+        presetData.presetId = activePreset;
+        savePreset(activePreset, presetData);
+
+        console.log(`[SDUI Server] Updated theme for preset '${activePreset}': ${JSON.stringify(currentFeed.theme)}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, message: 'Theme saved to server!', theme: currentFeed.theme }));
+        res.end(JSON.stringify({
+          success: true,
+          message: `Theme saved for preset: ${activePreset}!`,
+          theme: currentFeed.theme,
+          presetId: activePreset
+        }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON payload: ' + err.message }));
@@ -264,10 +340,14 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'Payload must contain a sections array' }));
           return;
         }
+        const activePreset = parsed.presetId || (parsed.version === '1.2' ? 'tech-weekend' : 'mega-sale');
+        parsed.presetId = activePreset;
         writeCurrentFeed(parsed);
-        console.log(`[SDUI Server] Updated feed configuration (${parsed.sections.length} sections)`);
+        savePreset(activePreset, parsed);
+
+        console.log(`[SDUI Server] Updated feed configuration for preset '${activePreset}' (${parsed.sections.length} sections)`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, message: 'Configuration saved and published!' }));
+        res.end(JSON.stringify({ success: true, message: 'Configuration saved and published!', presetId: activePreset }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Invalid JSON payload: ' + err.message }));
@@ -278,19 +358,31 @@ const server = http.createServer((req, res) => {
 
   // API: POST /api/v1/reset
   if (pathname === '/api/v1/reset' && req.method === 'POST') {
-    writeCurrentFeed(PRESETS['mega-sale']);
+    const defaultData = JSON.parse(JSON.stringify(PRESETS['mega-sale']));
+    defaultData.presetId = 'mega-sale';
+    savePreset('mega-sale', PRESETS['mega-sale']);
+    savePreset('tech-weekend', PRESETS['tech-weekend']);
+    writeCurrentFeed(defaultData);
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, message: 'Reset to default feed preset' }));
+    res.end(JSON.stringify({ success: true, message: 'Reset all presets to default configuration' }));
     return;
   }
 
   // API: POST /api/v1/preset/:id
   if (pathname.startsWith('/api/v1/preset/') && req.method === 'POST') {
     const presetId = pathname.replace('/api/v1/preset/', '');
-    if (PRESETS[presetId]) {
-      writeCurrentFeed(PRESETS[presetId]);
+    if (presetId === 'mega-sale' || presetId === 'tech-weekend' || PRESETS[presetId]) {
+      const presetData = getPreset(presetId);
+      presetData.presetId = presetId;
+      writeCurrentFeed(presetData);
+      console.log(`[SDUI Server] Switched to preset '${presetId}' with theme: ${JSON.stringify(presetData.theme)}`);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, message: `Loaded preset: ${presetId}` }));
+      res.end(JSON.stringify({
+        success: true,
+        message: `Loaded preset: ${presetId}`,
+        presetId,
+        theme: presetData.theme
+      }));
     } else {
       res.writeHead(404, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: `Preset '${presetId}' not found` }));
