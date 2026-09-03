@@ -1,20 +1,58 @@
 package com.flexifeed.app.data.remote
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 
 enum class CampaignType {
     DEFAULT_FEED,
     TECH_WEEKEND
 }
 
-class MockSDUIService {
+class MockSDUIService(
+    private val serverUrl: String = "http://10.0.2.2:8080/api/v1/home-feed"
+) {
+
+    var isLiveServerConnected: Boolean = false
+        private set
 
     suspend fun getHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): String {
-        // Simulate realistic network roundtrip delay
-        delay(600)
+        // Attempt live fetch from local Node.js server first
+        val liveJson = fetchFromLiveServer()
+        if (!liveJson.isNullOrBlank()) {
+            isLiveServerConnected = true
+            return liveJson
+        }
+
+        isLiveServerConnected = false
+        // Fallback to local preset with brief simulated delay
+        delay(400)
         return when (campaign) {
             CampaignType.DEFAULT_FEED -> DEFAULT_HOME_FEED_JSON
             CampaignType.TECH_WEEKEND -> TECH_WEEKEND_FEED_JSON
+        }
+    }
+
+    private suspend fun fetchFromLiveServer(): String? = withContext(Dispatchers.IO) {
+        try {
+            val url = URL(serverUrl)
+            val conn = (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                connectTimeout = 2500
+                readTimeout = 2500
+                setRequestProperty("Accept", "application/json")
+            }
+            if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                conn.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 
