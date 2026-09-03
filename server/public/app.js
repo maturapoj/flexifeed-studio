@@ -57,11 +57,20 @@ async function loadFeedFromServer() {
   }
 }
 
-// Publish feed to server
+// Publish feed to server (Smart Tab Awareness)
 async function publishFeedToServer() {
   try {
-    readFromVisualBuilder();
-    readFromThemeBuilder();
+    const isJsonActive = document.getElementById('panel-json')?.classList.contains('active');
+    const isThemeActive = document.getElementById('panel-theme')?.classList.contains('active');
+
+    if (isJsonActive) {
+      if (!readFromJsonEditor()) return;
+    } else if (isThemeActive) {
+      readFromThemeBuilder();
+    } else {
+      readFromVisualBuilder();
+      readFromThemeBuilder();
+    }
 
     const res = await fetch('/api/v1/home-feed', {
       method: 'POST',
@@ -70,7 +79,7 @@ async function publishFeedToServer() {
     });
     const result = await res.json();
     if (result.success) {
-      showToast('🚀 Changes published to Live Mobile Feed!');
+      showToast('🚀 บันทึกและ Publish ลง Server สำเร็จ!');
       renderMobilePreview();
       syncJsonEditor();
     } else {
@@ -79,6 +88,29 @@ async function publishFeedToServer() {
   } catch (err) {
     console.error('Error publishing feed:', err);
     showToast('Network error while publishing feed', true);
+  }
+}
+
+// Dedicated Save Theme to Server function
+async function saveThemeToServer() {
+  try {
+    readFromThemeBuilder();
+    const res = await fetch('/api/v1/theme', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentFeed.theme)
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast('🎨 บันทึก Theme ลง Server สำเร็จแล้ว!');
+      syncJsonEditor();
+      renderMobilePreview();
+    } else {
+      showToast(result.error || 'บันทึก Theme ไม่สำเร็จ', true);
+    }
+  } catch (err) {
+    console.error('Error saving theme to server:', err);
+    showToast('Network error while saving theme', true);
   }
 }
 
@@ -857,7 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.querySelectorAll('.palette-btn').forEach(pBtn => {
-    pBtn.addEventListener('click', () => {
+    pBtn.addEventListener('click', async () => {
       const primary = pBtn.dataset.primary;
       const accent = pBtn.dataset.accent;
       const mode = pBtn.dataset.mode;
@@ -867,11 +899,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (txtAccent) txtAccent.value = accent;
       if (selMode) selMode.value = mode;
       onThemeColorChanged();
-      showToast('Theme palette applied!');
+      await saveThemeToServer();
     });
   });
 
   // 6. Action Buttons
+  const btnSaveTheme = document.getElementById('btn-save-theme');
+  if (btnSaveTheme) {
+    btnSaveTheme.addEventListener('click', saveThemeToServer);
+  }
+
   document.getElementById('btn-publish-feed').addEventListener('click', publishFeedToServer);
   document.getElementById('btn-reset-default').addEventListener('click', resetFeed);
 
