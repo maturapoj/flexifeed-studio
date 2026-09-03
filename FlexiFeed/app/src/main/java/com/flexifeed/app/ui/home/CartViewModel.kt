@@ -7,32 +7,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.flexifeed.app.ui.state.CartItem
+import com.flexifeed.app.ui.state.CartItemAdded
+import com.flexifeed.app.ui.state.CheckoutResult
 import java.text.NumberFormat
 import java.util.Locale
-
-/**
- * Rich domain model for an item inside the shopping cart.
- */
-data class CartItem(
-    val id: String,
-    val name: String,
-    val priceNumeric: Double,
-    val priceFormatted: String,
-    val imageUrl: String,
-    val quantity: Int
-)
-
-data class CartItemAdded(
-    val productId: String,
-    val quantity: Int
-)
-
-data class CheckoutResult(
-    val orderId: String,
-    val totalAmount: Double,
-    val totalAmountFormatted: String,
-    val itemsCount: Int
-)
 
 class CartViewModel : ViewModel() {
 

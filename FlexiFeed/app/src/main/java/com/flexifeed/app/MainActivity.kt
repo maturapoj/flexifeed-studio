@@ -24,7 +24,7 @@ import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.ui.home.CartViewModel
 import com.flexifeed.app.ui.home.HomeScreen
 import com.flexifeed.app.ui.home.HomeViewModel
-import com.flexifeed.app.ui.home.SDUIFeedUiState
+import com.flexifeed.app.ui.state.SDUIFeedUiState
 import com.flexifeed.app.ui.sdui.ActionDispatcher
 import com.flexifeed.app.ui.theme.FlexiFeedTheme
 import com.flexifeed.app.ui.theme.parseHexColorOrNull

@@ -1,6 +1,8 @@
 package com.flexifeed.app
 
 import com.flexifeed.app.ui.home.CartViewModel
+import com.flexifeed.app.ui.state.CartItem
+import com.flexifeed.app.ui.state.SDUIFeedUiState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue

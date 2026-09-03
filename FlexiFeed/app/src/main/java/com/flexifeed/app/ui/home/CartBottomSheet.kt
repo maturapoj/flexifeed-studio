@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
+import com.flexifeed.app.ui.state.CartItem
+import com.flexifeed.app.ui.state.CheckoutResult
 import com.flexifeed.app.ui.theme.FlexiFeedTheme
 
 @Composable

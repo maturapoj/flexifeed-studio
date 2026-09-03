@@ -5,22 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.data.repository.SDUIRepository
 import com.flexifeed.app.domain.model.SDUIScreen
+import com.flexifeed.app.ui.state.SDUIFeedUiState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
-sealed interface SDUIFeedUiState {
-    data object Loading : SDUIFeedUiState
-    data class Success(
-        val screen: SDUIScreen,
-        val campaign: CampaignType,
-        val isLiveServer: Boolean = false
-    ) : SDUIFeedUiState
-    data class Error(val message: String) : SDUIFeedUiState
-}
 
 class HomeViewModel(
     private val repository: SDUIRepository = SDUIRepository(),
