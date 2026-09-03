@@ -42,6 +42,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUINode
+import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.theme.AmberRating
 
 @Composable
@@ -51,7 +52,7 @@ fun GridComponent(
     modifier: Modifier = Modifier
 ) {
     val items = node.items
-    val title = node.getString("title", "สินค้าแนะนำสำหรับคุณ")
+    val title = node.getString(SDUIConstants.PropKey.TITLE, "สินค้าแนะนำสำหรับคุณ")
 
     Column(
         modifier = modifier
@@ -103,9 +104,9 @@ fun ProductCardFull(
     onAction: (SDUIAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val name = node.getString("name")
-    val price = node.getString("price")
-    val rating = node.getDouble("rating", 0.0)
+    val name = node.getString(SDUIConstants.PropKey.NAME)
+    val price = node.getString(SDUIConstants.PropKey.PRICE)
+    val rating = node.getDouble(SDUIConstants.PropKey.RATING, 0.0)
     val imageUrl = node.resolvedImageUrl
 
     Card(

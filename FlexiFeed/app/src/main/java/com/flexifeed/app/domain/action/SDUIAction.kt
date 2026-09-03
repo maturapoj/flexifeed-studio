@@ -1,5 +1,7 @@
 package com.flexifeed.app.domain.action
 
+import com.flexifeed.app.domain.model.SDUIConstants
+
 /**
  * Domain representation of an SDUI Action contract.
  */
@@ -8,17 +10,17 @@ data class SDUIAction(
     val payload: Map<String, Any?> = emptyMap()
 ) {
     companion object {
-        const val TYPE_NAVIGATE = "NAVIGATE"
-        const val TYPE_ADD_TO_CART = "ADD_TO_CART"
-        const val TYPE_ANALYTICS = "ANALYTICS"
+        const val TYPE_NAVIGATE = SDUIConstants.ActionType.NAVIGATE
+        const val TYPE_ADD_TO_CART = SDUIConstants.ActionType.ADD_TO_CART
+        const val TYPE_ANALYTICS = SDUIConstants.ActionType.ANALYTICS
     }
 
-    fun getTargetUrl(): String? = payload["target"] as? String
+    fun getTargetUrl(): String? = payload[SDUIConstants.ActionKey.TARGET] as? String
 
-    fun getProductId(): String? = (payload["productId"] ?: payload["id"])?.toString()
+    fun getProductId(): String? = (payload[SDUIConstants.ActionKey.PRODUCT_ID] ?: payload[SDUIConstants.ActionKey.ID])?.toString()
 
     fun getQuantity(): Int {
-        val qty = payload["quantity"]
+        val qty = payload[SDUIConstants.ActionKey.QUANTITY]
         return when (qty) {
             is Number -> qty.toInt()
             is String -> qty.toIntOrNull() ?: 1
@@ -26,5 +28,5 @@ data class SDUIAction(
         }
     }
 
-    fun getEventName(): String? = (payload["event"] ?: payload["eventName"]) as? String
+    fun getEventName(): String? = (payload[SDUIConstants.ActionKey.EVENT] ?: payload[SDUIConstants.ActionKey.EVENT_NAME]) as? String
 }

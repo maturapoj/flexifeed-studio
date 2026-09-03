@@ -1,5 +1,6 @@
 package com.flexifeed.app
 
+import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.sdui.ComponentRegistry
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -10,15 +11,17 @@ class ComponentRegistryTest {
 
     @Test
     fun testRegisteredComponentsExist() {
-        assertTrue(ComponentRegistry.has("CAROUSEL"))
-        assertTrue(ComponentRegistry.has("HORIZONTAL_LIST"))
-        assertTrue(ComponentRegistry.has("GRID_2X2"))
-        assertTrue(ComponentRegistry.has("PRODUCT_CARD_COMPACT"))
-        assertTrue(ComponentRegistry.has("PRODUCT_CARD_FULL"))
+        assertTrue(ComponentRegistry.has(SDUIConstants.ComponentType.CAROUSEL))
+        assertTrue(ComponentRegistry.has(SDUIConstants.ComponentType.HORIZONTAL_LIST))
+        assertTrue(ComponentRegistry.has(SDUIConstants.ComponentType.GRID_2X2))
+        assertTrue(ComponentRegistry.has(SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT))
+        assertTrue(ComponentRegistry.has(SDUIConstants.ComponentType.PRODUCT_CARD_FULL))
 
-        assertNotNull(ComponentRegistry.get("CAROUSEL"))
-        assertNotNull(ComponentRegistry.get("HORIZONTAL_LIST"))
-        assertNotNull(ComponentRegistry.get("GRID_2X2"))
+        assertNotNull(ComponentRegistry.get(SDUIConstants.ComponentType.CAROUSEL))
+        assertNotNull(ComponentRegistry.get(SDUIConstants.ComponentType.HORIZONTAL_LIST))
+        assertNotNull(ComponentRegistry.get(SDUIConstants.ComponentType.GRID_2X2))
+        assertNotNull(ComponentRegistry.get(SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT))
+        assertNotNull(ComponentRegistry.get(SDUIConstants.ComponentType.PRODUCT_CARD_FULL))
     }
 
     @Test

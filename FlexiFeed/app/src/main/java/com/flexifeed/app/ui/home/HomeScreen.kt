@@ -63,6 +63,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.action.AnalyticsEvent
 import com.flexifeed.app.domain.action.AnalyticsTracker
+import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.components.SDUIFeedShimmer
 import com.flexifeed.app.ui.sdui.ActionDispatcher
 import com.flexifeed.app.ui.sdui.SDUIRenderer
@@ -242,7 +243,7 @@ fun HomeScreen(
                                 node = sectionNode,
                                 onAction = { action ->
                                     // Intercept target navigation for in-app sheet preview
-                                    if (action.type == "NAVIGATE") {
+                                    if (action.type == SDUIConstants.ActionType.NAVIGATE) {
                                         action.getTargetUrl()?.let { targetUrl ->
                                             navigatedTargetUrl = targetUrl
                                         }

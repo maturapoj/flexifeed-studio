@@ -49,6 +49,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUINode
+import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.theme.CoralSale
 import kotlinx.coroutines.delay
 
@@ -59,8 +60,8 @@ fun HorizontalListComponent(
     modifier: Modifier = Modifier
 ) {
     val items = node.items
-    val title = node.getString("title", "⚡ Flash Sale")
-    val initialSeconds = node.getLong("countdownRemainingSec", 7200L)
+    val title = node.getString(SDUIConstants.PropKey.TITLE, "⚡ Flash Sale")
+    val initialSeconds = node.getLong(SDUIConstants.PropKey.COUNTDOWN_REMAINING_SEC, 7200L)
 
     // Countdown timer ticking down every second
     var remainingSeconds by remember(node.id, initialSeconds) {
@@ -154,9 +155,9 @@ fun ProductCardCompact(
     onAction: (SDUIAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val name = node.getString("name")
-    val price = node.getString("price")
-    val originalPrice = node.getString("originalPrice")
+    val name = node.getString(SDUIConstants.PropKey.NAME)
+    val price = node.getString(SDUIConstants.PropKey.PRICE)
+    val originalPrice = node.getString(SDUIConstants.PropKey.ORIGINAL_PRICE)
     val imageUrl = node.resolvedImageUrl
 
     Card(

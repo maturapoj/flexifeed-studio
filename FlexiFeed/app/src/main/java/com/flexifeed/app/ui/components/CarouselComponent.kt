@@ -39,6 +39,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUINode
+import com.flexifeed.app.domain.model.SDUIConstants
 import kotlinx.coroutines.delay
 
 @Composable
@@ -50,7 +51,7 @@ fun CarouselComponent(
     val items = node.items
     if (items.isEmpty()) return
 
-    val autoScrollInterval = node.getLong("autoScrollInterval", 4000L).coerceAtLeast(1500L)
+    val autoScrollInterval = node.getLong(SDUIConstants.PropKey.AUTO_SCROLL_INTERVAL, 4000L).coerceAtLeast(1500L)
     val pagerState = rememberPagerState(pageCount = { items.size })
     val isDragged by pagerState.interactionSource.collectIsDraggedAsState()
 
@@ -100,7 +101,7 @@ fun CarouselComponent(
                         .data(imageUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = item.getString("title", "Banner ${page + 1}"),
+                    contentDescription = item.getString(SDUIConstants.PropKey.TITLE, "Banner ${page + 1}"),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                     loading = {

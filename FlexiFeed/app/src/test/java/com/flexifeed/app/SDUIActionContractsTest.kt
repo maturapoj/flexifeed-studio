@@ -2,6 +2,7 @@ package com.flexifeed.app
 
 import com.flexifeed.app.domain.action.AnalyticsTracker
 import com.flexifeed.app.domain.action.SDUIAction
+import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.home.CartViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -12,21 +13,21 @@ class SDUIActionContractsTest {
     @Test
     fun testSDUIActionPayloadHelpers() {
         val navAction = SDUIAction(
-            type = "NAVIGATE",
-            payload = mapOf("target" to "flexifeed://campaign/mega-sale")
+            type = SDUIConstants.ActionType.NAVIGATE,
+            payload = mapOf(SDUIConstants.ActionKey.TARGET to "flexifeed://campaign/mega-sale")
         )
         assertEquals("flexifeed://campaign/mega-sale", navAction.getTargetUrl())
 
         val cartAction = SDUIAction(
-            type = "ADD_TO_CART",
-            payload = mapOf("productId" to "201", "quantity" to 2)
+            type = SDUIConstants.ActionType.ADD_TO_CART,
+            payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to "201", SDUIConstants.ActionKey.QUANTITY to 2)
         )
         assertEquals("201", cartAction.getProductId())
         assertEquals(2, cartAction.getQuantity())
 
         val analyticsAction = SDUIAction(
-            type = "ANALYTICS",
-            payload = mapOf("event" to "banner_click", "id" to "banner_01")
+            type = SDUIConstants.ActionType.ANALYTICS,
+            payload = mapOf(SDUIConstants.ActionKey.EVENT to "banner_click", SDUIConstants.ActionKey.ID to "banner_01")
         )
         assertEquals("banner_click", analyticsAction.getEventName())
     }

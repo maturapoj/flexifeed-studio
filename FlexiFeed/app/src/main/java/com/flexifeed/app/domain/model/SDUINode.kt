@@ -69,11 +69,11 @@ data class SDUINode(
     }
 
     /**
-     * Resolves the image URL checking props ("imageUrl", "thumbnailUrl", "bannerUrl", "image")
+     * Resolves the image URL checking props (imageUrl, thumbnailUrl, bannerUrl, image)
      */
     val resolvedImageUrl: String
-        get() = getString("imageUrl")
-            .ifEmpty { getString("thumbnailUrl") }
-            .ifEmpty { getString("bannerUrl") }
-            .ifEmpty { getString("image") }
+        get() = getString(SDUIConstants.PropKey.IMAGE_URL)
+            .ifEmpty { getString(SDUIConstants.PropKey.THUMBNAIL_URL) }
+            .ifEmpty { getString(SDUIConstants.PropKey.BANNER_URL) }
+            .ifEmpty { getString(SDUIConstants.PropKey.IMAGE) }
 }

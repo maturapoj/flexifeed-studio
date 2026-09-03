@@ -8,6 +8,7 @@ import com.flexifeed.app.data.remote.MockSDUIService
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen
+import com.flexifeed.app.domain.model.SDUIConstants
 import com.google.gson.Gson
 import com.flexifeed.app.data.remote.RemoteSDUIService
 import com.flexifeed.app.data.remote.SDUIService
@@ -53,13 +54,13 @@ class SDUIRepository(
     }
 
     private fun mapToDomain(dto: SDUIResponseDTO?): SDUIScreen {
-        val screenName = dto?.screen ?: "UNKNOWN"
-        val version = dto?.version ?: "1.0"
+        val screenName = dto?.screen ?: SDUIConstants.Screen.UNKNOWN
+        val version = dto?.version ?: SDUIConstants.Screen.DEFAULT_VERSION
         val theme = dto?.theme?.let {
             com.flexifeed.app.domain.model.SDUITheme(
                 primaryColorHex = it.primaryColor,
                 accentColorHex = it.accentColor,
-                isDarkMode = it.mode.equals("DARK", ignoreCase = true)
+                isDarkMode = it.mode.equals(SDUIConstants.ThemeMode.DARK, ignoreCase = true)
             )
         }
         val sections = dto?.sections?.map { mapNode(it) } ?: emptyList()
@@ -73,8 +74,8 @@ class SDUIRepository(
 
     private fun mapNode(dto: SDUINodeDTO): SDUINode {
         val mergedProps = (dto.props?.toMutableMap() ?: mutableMapOf<String, Any?>())
-        if (!dto.imageUrl.isNullOrEmpty() && !mergedProps.containsKey("imageUrl")) {
-            mergedProps["imageUrl"] = dto.imageUrl
+        if (!dto.imageUrl.isNullOrEmpty() && !mergedProps.containsKey(SDUIConstants.PropKey.IMAGE_URL)) {
+            mergedProps[SDUIConstants.PropKey.IMAGE_URL] = dto.imageUrl
         }
 
         val items = dto.items?.map { mapNode(it) } ?: emptyList()
@@ -82,7 +83,7 @@ class SDUIRepository(
 
         return SDUINode(
             id = dto.id ?: "",
-            type = dto.type ?: "UNKNOWN",
+            type = dto.type ?: SDUIConstants.Screen.UNKNOWN,
             props = mergedProps,
             items = items,
             action = action
