@@ -354,13 +354,13 @@ function renderVisualBuilder() {
         itemRow.innerHTML = `
           <img src="${imgUrl}" class="item-thumb-preview" alt="Slide">
           <div class="item-details-grid">
-            <div class="form-group">
-              <label>Banner Image URL</label>
-              <input type="text" class="input-text" data-item-prop="imageUrl" value="${item.imageUrl || ''}">
+            <div class="form-group item-fields-full">
+              <label>🖼️ Banner Image URL</label>
+              <input type="text" class="input-text" data-item-prop="imageUrl" value="${item.imageUrl || ''}" placeholder="https://picsum.photos/...">
             </div>
-            <div class="form-group">
-              <label>Navigation Target Deep Link</label>
-              <input type="text" class="input-text" data-item-prop="target" value="${item.action?.payload?.target || ''}">
+            <div class="form-group item-fields-full">
+              <label>🔗 Navigation Target Deep Link</label>
+              <input type="text" class="input-text" data-item-prop="target" value="${item.action?.payload?.target || ''}" placeholder="flexifeed://campaign/...">
             </div>
           </div>
           <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Slide">✕</button>
@@ -369,21 +369,23 @@ function renderVisualBuilder() {
         itemRow.innerHTML = `
           <img src="${imgUrl}" class="item-thumb-preview" alt="Product">
           <div class="item-details-grid">
-            <div class="form-group">
-              <label>Name</label>
-              <input type="text" class="input-text" data-item-prop="name" value="${item.props?.name || ''}">
+            <div class="form-group item-fields-full">
+              <label>🏷️ Product Name</label>
+              <input type="text" class="input-text" data-item-prop="name" value="${item.props?.name || ''}" placeholder="ชื่อสินค้า">
             </div>
-            <div class="form-group">
-              <label>Price</label>
-              <input type="text" class="input-text" data-item-prop="price" value="${item.props?.price || ''}">
-            </div>
-            <div class="form-group">
-              <label>Original Price</label>
-              <input type="text" class="input-text" data-item-prop="originalPrice" value="${item.props?.originalPrice || ''}">
-            </div>
-            <div class="form-group">
-              <label>Thumbnail URL</label>
-              <input type="text" class="input-text" data-item-prop="thumbnailUrl" value="${item.props?.thumbnailUrl || ''}">
+            <div class="item-fields-row">
+              <div class="form-group">
+                <label>💰 Price</label>
+                <input type="text" class="input-text" data-item-prop="price" value="${item.props?.price || ''}" placeholder="฿890">
+              </div>
+              <div class="form-group">
+                <label>🏷️ Original Price</label>
+                <input type="text" class="input-text" data-item-prop="originalPrice" value="${item.props?.originalPrice || ''}" placeholder="฿1,590">
+              </div>
+              <div class="form-group" style="flex: 2;">
+                <label>🖼️ Thumbnail URL</label>
+                <input type="text" class="input-text" data-item-prop="thumbnailUrl" value="${item.props?.thumbnailUrl || ''}" placeholder="https://...">
+              </div>
             </div>
           </div>
           <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Product">✕</button>
@@ -392,17 +394,19 @@ function renderVisualBuilder() {
         itemRow.innerHTML = `
           <img src="${imgUrl}" class="item-thumb-preview" alt="Product">
           <div class="item-details-grid">
-            <div class="form-group">
-              <label>Product Name</label>
-              <input type="text" class="input-text" data-item-prop="name" value="${item.props?.name || ''}">
+            <div class="form-group item-fields-full">
+              <label>🏷️ Product Name</label>
+              <input type="text" class="input-text" data-item-prop="name" value="${item.props?.name || ''}" placeholder="ชื่อสินค้า">
             </div>
-            <div class="form-group">
-              <label>Price</label>
-              <input type="text" class="input-text" data-item-prop="price" value="${item.props?.price || ''}">
-            </div>
-            <div class="form-group">
-              <label>Thumbnail URL</label>
-              <input type="text" class="input-text" data-item-prop="thumbnailUrl" value="${item.props?.thumbnailUrl || ''}">
+            <div class="item-fields-row">
+              <div class="form-group">
+                <label>💰 Price</label>
+                <input type="text" class="input-text" data-item-prop="price" value="${item.props?.price || ''}" placeholder="฿1,490">
+              </div>
+              <div class="form-group" style="flex: 2;">
+                <label>🖼️ Thumbnail URL</label>
+                <input type="text" class="input-text" data-item-prop="thumbnailUrl" value="${item.props?.thumbnailUrl || ''}" placeholder="https://...">
+              </div>
             </div>
           </div>
           <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Item">✕</button>
