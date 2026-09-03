@@ -689,6 +689,50 @@ body {
   width: 100%;
 }
 
+/* Item Action Controls (Move Up / Down & Delete) */
+.item-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding-left: 4px;
+}
+
+.item-card-actions .btn-icon {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  transition: all 0.2s ease;
+}
+
+.item-card-actions .btn-icon:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--border-focus);
+  transform: scale(1.08);
+}
+
+.item-card-actions .btn-icon:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  pointer-events: none;
+  border-color: transparent;
+}
+
+.item-card-actions .btn-icon.delete {
+  color: var(--text-muted);
+}
+
+.item-card-actions .btn-icon.delete:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
 /* --- 5. App Dynamic Theme Tab Styling --- */
 .theme-editor-card .card-intro h3 {
   font-size: 18px;

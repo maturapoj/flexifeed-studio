@@ -15,16 +15,6 @@
       },
       "items": [
         {
-          "id": "banner_mega_sale",
-          "imageUrl": "https://picsum.photos/id/1060/800/400",
-          "action": {
-            "type": "NAVIGATE",
-            "payload": {
-              "target": "flexifeed://campaign/mega-sale"
-            }
-          }
-        },
-        {
           "id": "banner_gadget_expo",
           "imageUrl": "https://picsum.photos/id/201/800/400",
           "action": {
@@ -32,7 +22,19 @@
             "payload": {
               "target": "flexifeed://campaign/gadget-expo"
             }
-          }
+          },
+          "props": {}
+        },
+        {
+          "id": "banner_mega_sale",
+          "imageUrl": "https://picsum.photos/id/1060/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/mega-sale"
+            }
+          },
+          "props": {}
         },
         {
           "id": "banner_super_brand_day",
@@ -42,7 +44,8 @@
             "payload": {
               "target": "flexifeed://campaign/super-brand-day"
             }
-          }
+          },
+          "props": {}
         }
       ]
     },
