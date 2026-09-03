@@ -395,7 +395,11 @@ function renderVisualBuilder() {
               <input type="text" class="input-text" data-item-prop="target" value="${item.action?.payload?.target || ''}" placeholder="flexifeed://campaign/...">
             </div>
           </div>
-          <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Slide">✕</button>
+          <div class="item-card-actions">
+            <button class="btn-icon" onclick="moveItem(${sIndex}, ${iIndex}, -1)" title="เลื่อนขึ้น" ${iIndex === 0 ? 'disabled' : ''}>⬆️</button>
+            <button class="btn-icon" onclick="moveItem(${sIndex}, ${iIndex}, 1)" title="เลื่อนลง" ${iIndex === (section.items.length - 1) ? 'disabled' : ''}>⬇️</button>
+            <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="ลบ Item นี้">🗑️</button>
+          </div>
         `;
       } else if (section.type === 'HORIZONTAL_LIST') {
         itemRow.innerHTML = `
@@ -420,7 +424,11 @@ function renderVisualBuilder() {
               </div>
             </div>
           </div>
-          <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Product">✕</button>
+          <div class="item-card-actions">
+            <button class="btn-icon" onclick="moveItem(${sIndex}, ${iIndex}, -1)" title="เลื่อนขึ้น" ${iIndex === 0 ? 'disabled' : ''}>⬆️</button>
+            <button class="btn-icon" onclick="moveItem(${sIndex}, ${iIndex}, 1)" title="เลื่อนลง" ${iIndex === (section.items.length - 1) ? 'disabled' : ''}>⬇️</button>
+            <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="ลบ Item นี้">🗑️</button>
+          </div>
         `;
       } else if (section.type === 'GRID_2X2') {
         itemRow.innerHTML = `
@@ -441,7 +449,11 @@ function renderVisualBuilder() {
               </div>
             </div>
           </div>
-          <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Item">✕</button>
+          <div class="item-card-actions">
+            <button class="btn-icon" onclick="moveItem(${sIndex}, ${iIndex}, -1)" title="เลื่อนขึ้น" ${iIndex === 0 ? 'disabled' : ''}>⬆️</button>
+            <button class="btn-icon" onclick="moveItem(${sIndex}, ${iIndex}, 1)" title="เลื่อนลง" ${iIndex === (section.items.length - 1) ? 'disabled' : ''}>⬇️</button>
+            <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="ลบ Item นี้">🗑️</button>
+          </div>
         `;
       }
 
@@ -458,7 +470,7 @@ function renderVisualBuilder() {
   });
 }
 
-// Section Actions
+// Section & Item Reordering Actions
 window.moveSection = function(index, direction) {
   readFromVisualBuilder();
   const targetIndex = index + direction;
@@ -469,6 +481,23 @@ window.moveSection = function(index, direction) {
   renderVisualBuilder();
   renderMobilePreview();
   syncJsonEditor();
+};
+
+window.moveItem = function(sectionIndex, itemIndex, direction) {
+  readFromVisualBuilder();
+  const section = currentFeed.sections[sectionIndex];
+  if (!section || !section.items) return;
+  const targetIndex = itemIndex + direction;
+  if (targetIndex < 0 || targetIndex >= section.items.length) return;
+
+  const temp = section.items[itemIndex];
+  section.items[itemIndex] = section.items[targetIndex];
+  section.items[targetIndex] = temp;
+
+  renderVisualBuilder();
+  renderMobilePreview();
+  syncJsonEditor();
+  showToast('↕️ สลับลำดับ Item เรียบร้อย');
 };
 
 window.deleteSection = function(index) {
