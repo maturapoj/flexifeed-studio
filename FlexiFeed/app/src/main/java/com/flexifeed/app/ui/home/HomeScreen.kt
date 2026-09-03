@@ -32,7 +32,6 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -49,6 +48,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.ui.tooling.preview.Preview
@@ -108,44 +108,56 @@ fun HomeScreen(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
+                    val isDark = (0.299f * MaterialTheme.colorScheme.surface.red +
+                            0.587f * MaterialTheme.colorScheme.surface.green +
+                            0.114f * MaterialTheme.colorScheme.surface.blue) < 0.5f
+
+                    val logoBoxBg = if (isDark) {
+                        Color(0xFFE8EDFA) // Soft light contrast surface matching web mock
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer
+                    }
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(38.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(MaterialTheme.colorScheme.primary),
+                                .background(logoBoxBg),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.ShoppingBag,
-                                contentDescription = "Logo",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(20.dp)
+                            Text(
+                                text = "🛒",
+                                fontSize = 19.sp
                             )
                         }
-                        Column {
+                        Column(
+                            verticalArrangement = Arrangement.Center
+                        ) {
                             Text(
                                 text = "FlexiFeed",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                lineHeight = 18.sp
                             )
                             Text(
                                 text = "Server-Driven UI",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
+                                color = if (isDark) Color(0xFF94A3B8) else MaterialTheme.colorScheme.primary,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                lineHeight = 14.sp
                             )
                         }
                     }
