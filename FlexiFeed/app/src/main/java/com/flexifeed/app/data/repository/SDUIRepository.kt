@@ -9,7 +9,6 @@ import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen
 import com.google.gson.Gson
-
 import com.flexifeed.app.data.remote.RemoteSDUIService
 import com.flexifeed.app.data.remote.SDUIService
 

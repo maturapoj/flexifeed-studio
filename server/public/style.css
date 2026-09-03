@@ -358,11 +358,11 @@ body {
   overflow: hidden;
 }
 
-/* Left Config Panel - Significantly Larger, Ultra-Spacious & Responsive */
+/* Left Config Panel - 60% / 40% Split */
 .config-panel {
-  width: clamp(860px, 62vw, 1320px);
-  min-width: 650px;
-  max-width: calc(100vw - 420px);
+  width: calc(60vw - 5px);
+  min-width: 520px;
+  max-width: 80vw;
   background: var(--bg-panel);
   border-right: 1px solid var(--border);
   display: flex;
@@ -830,15 +830,16 @@ body {
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
-/* --- 6. Live Mobile Phone Preview & Responsive Scaling --- */
+/* --- 6. Live Mobile Phone Preview & Responsive Scaling (40% Split) --- */
 .preview-panel {
   flex: 1;
+  width: calc(40vw - 5px);
   background: var(--bg-main);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  min-width: 400px;
+  min-width: 360px;
 }
 
 .preview-header {
