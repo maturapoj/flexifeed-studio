@@ -271,3 +271,102 @@ fun ProductCardCompact(
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// COMPOSE PREVIEWS
+// ---------------------------------------------------------------------------
+
+@androidx.compose.ui.tooling.preview.Preview(name = "HorizontalList - Light", showBackground = true)
+@Composable
+fun HorizontalListPreview_Light() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = false) {
+        androidx.compose.material3.Surface {
+            val sampleItems = listOf(
+                SDUINode(
+                    id = "flash_1",
+                    type = SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT,
+                    props = mapOf(
+                        SDUIConstants.PropKey.NAME to "หูฟังบลูทูธไร้สาย Pro",
+                        SDUIConstants.PropKey.PRICE to "฿890",
+                        SDUIConstants.PropKey.ORIGINAL_PRICE to "฿1,590",
+                        SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                    ),
+                    action = SDUIAction(
+                        type = SDUIConstants.ActionType.ADD_TO_CART,
+                        payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to "flash_1")
+                    )
+                ),
+                SDUINode(
+                    id = "flash_2",
+                    type = SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT,
+                    props = mapOf(
+                        SDUIConstants.PropKey.NAME to "สมาร์ตวอทช์ Ultra Fit",
+                        SDUIConstants.PropKey.PRICE to "฿1,290",
+                        SDUIConstants.PropKey.ORIGINAL_PRICE to "฿2,990",
+                        SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                    ),
+                    action = SDUIAction(
+                        type = SDUIConstants.ActionType.ADD_TO_CART,
+                        payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to "flash_2")
+                    )
+                ),
+                SDUINode(
+                    id = "flash_3",
+                    type = SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT,
+                    props = mapOf(
+                        SDUIConstants.PropKey.NAME to "พาวเวอร์แบงค์ 20000mAh",
+                        SDUIConstants.PropKey.PRICE to "฿499",
+                        SDUIConstants.PropKey.ORIGINAL_PRICE to "฿990",
+                        SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                    ),
+                    action = SDUIAction(
+                        type = SDUIConstants.ActionType.ADD_TO_CART,
+                        payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to "flash_3")
+                    )
+                )
+            )
+
+            val sectionNode = SDUINode(
+                id = "sec_flash",
+                type = SDUIConstants.ComponentType.HORIZONTAL_LIST,
+                props = mapOf(
+                    SDUIConstants.PropKey.TITLE to "⚡ Flash Sale ดีลเด็ด",
+                    SDUIConstants.PropKey.COUNTDOWN_REMAINING_SEC to 7200L
+                ),
+                items = sampleItems
+            )
+
+            HorizontalListComponent(node = sectionNode, onAction = {})
+        }
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(name = "HorizontalList - Dark", showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun HorizontalListPreview_Dark() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme(darkTheme = true) {
+        androidx.compose.material3.Surface {
+            HorizontalListPreview_Light()
+        }
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(name = "ProductCardCompact", showBackground = true)
+@Composable
+fun ProductCardCompactPreview() {
+    com.flexifeed.app.ui.theme.FlexiFeedTheme {
+        androidx.compose.material3.Surface(modifier = Modifier.padding(16.dp)) {
+            val sampleNode = SDUINode(
+                id = "compact_sample",
+                type = SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT,
+                props = mapOf(
+                    SDUIConstants.PropKey.NAME to "กล้องฟิล์ม Retro Classic",
+                    SDUIConstants.PropKey.PRICE to "฿1,890",
+                    SDUIConstants.PropKey.ORIGINAL_PRICE to "฿3,500",
+                    SDUIConstants.PropKey.THUMBNAIL_URL to "https://picsum.photos/200/200"
+                )
+            )
+            ProductCardCompact(node = sampleNode, onAction = {})
+        }
+    }
+}
