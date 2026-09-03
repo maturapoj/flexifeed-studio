@@ -358,11 +358,11 @@ body {
   overflow: hidden;
 }
 
-/* Left Config Panel - Wider and more comfortable */
+/* Left Config Panel - Significantly Larger, Ultra-Spacious & Responsive */
 .config-panel {
-  width: 720px;
-  min-width: 480px;
-  max-width: 980px;
+  width: clamp(860px, 62vw, 1320px);
+  min-width: 650px;
+  max-width: calc(100vw - 420px);
   background: var(--bg-panel);
   border-right: 1px solid var(--border);
   display: flex;
@@ -373,7 +373,7 @@ body {
 
 /* Draggable Split Resizer */
 .panel-resizer {
-  width: 8px;
+  width: 10px;
   background: transparent;
   cursor: col-resize;
   position: relative;
@@ -389,8 +389,8 @@ body {
 }
 
 .resizer-handle {
-  width: 3px;
-  height: 48px;
+  width: 4px;
+  height: 54px;
   background: var(--text-dim);
   border-radius: 2px;
   opacity: 0.6;
@@ -406,22 +406,22 @@ body {
 .editor-tabs {
   display: flex;
   border-bottom: 1px solid var(--border);
-  padding: 0 20px;
+  padding: 0 24px;
   background: rgba(0, 0, 0, 0.18);
   flex-shrink: 0;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tab-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 18px;
+  padding: 16px 22px;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
   color: var(--text-label);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -429,20 +429,20 @@ body {
 
 .tab-btn:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .tab-btn.active {
   color: var(--primary-light);
   border-bottom-color: var(--primary);
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(99, 102, 241, 0.1);
 }
 
 .tab-content {
   display: none;
   flex: 1;
   overflow-y: auto;
-  padding: 22px;
+  padding: 26px 32px;
 }
 
 .tab-content.active {
@@ -452,16 +452,16 @@ body {
 /* Panel Card */
 .panel-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 22px;
+  margin-bottom: 22px;
   box-shadow: var(--shadow-card);
 }
 
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: 18px;
 }
 
 .flex-1 { flex: 1; }
@@ -469,11 +469,11 @@ body {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
 }
 
 .form-group label {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-label);
   display: flex;
@@ -481,19 +481,19 @@ body {
   gap: 6px;
 }
 
-/* Input Fields - Taller, larger font, bright white text */
+/* Input Fields - Extra Spacious, 46px height, 15px font */
 .input-text {
   background: var(--bg-input);
   border: 1.5px solid var(--border);
   color: #FFFFFF;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: var(--radius-sm);
-  font-size: 14.5px;
+  font-size: 15px;
   font-family: inherit;
   font-weight: 500;
   outline: none;
   transition: all 0.2s ease;
-  min-height: 42px;
+  min-height: 46px;
 }
 
 .input-text:focus {
