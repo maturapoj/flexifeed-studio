@@ -706,21 +706,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Draggable Split Resizer
+  // 2. Draggable Split Resizer (Exact 60 / 40 Split)
   const resizer = document.getElementById('panel-resizer');
   const configPanel = document.getElementById('config-panel');
-  const savedWidth = localStorage.getItem('flexifeed_panel_width_v2');
+  const savedWidth = localStorage.getItem('flexifeed_panel_width_60_40');
 
-  // Ultra-spacious default: 62% of viewport (minimum 1020px on wide screens)
-  const defaultCalculatedWidth = Math.min(Math.max(Math.round(window.innerWidth * 0.62), 1020), window.innerWidth - 440);
+  function get60PercentWidth() {
+    return Math.round(window.innerWidth * 0.60);
+  }
+
   if (configPanel) {
-    if (savedWidth && parseInt(savedWidth, 10) >= 900) {
+    if (savedWidth) {
       configPanel.style.width = `${savedWidth}px`;
     } else {
-      configPanel.style.width = `${defaultCalculatedWidth}px`;
-      localStorage.setItem('flexifeed_panel_width_v2', defaultCalculatedWidth);
+      configPanel.style.width = `${get60PercentWidth()}px`;
     }
   }
+
+  // Keep 60/40 responsive on window resize
+  window.addEventListener('resize', () => {
+    if (!localStorage.getItem('flexifeed_panel_width_60_40') && configPanel) {
+      configPanel.style.width = `${get60PercentWidth()}px`;
+    }
+    updatePhoneZoom();
+  });
 
   if (resizer && configPanel) {
     let isDragging = false;
@@ -733,7 +742,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      const newWidth = Math.min(Math.max(e.clientX, 700), window.innerWidth - 400);
+      const minW = Math.max(500, Math.round(window.innerWidth * 0.35));
+      const maxW = Math.min(window.innerWidth - 360, Math.round(window.innerWidth * 0.80));
+      const newWidth = Math.min(Math.max(e.clientX, minW), maxW);
       configPanel.style.width = `${newWidth}px`;
       updatePhoneZoom();
     });
@@ -744,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resizer.classList.remove('dragging');
         document.body.style.userSelect = '';
         document.body.style.cursor = '';
-        localStorage.setItem('flexifeed_panel_width_v2', configPanel.offsetWidth);
+        localStorage.setItem('flexifeed_panel_width_60_40', configPanel.offsetWidth);
         updatePhoneZoom();
       }
     });
