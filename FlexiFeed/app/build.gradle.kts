@@ -19,10 +19,15 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SDUI_BASE_URL", "\"http://10.0.2.2:8080/\"")
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "SDUI_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        }
         release {
+            buildConfigField("String", "SDUI_BASE_URL", "\"https://api.flexifeed.com/\"")
             optimization {
                 enable = false
             }
@@ -34,6 +39,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions {
         unitTests {
