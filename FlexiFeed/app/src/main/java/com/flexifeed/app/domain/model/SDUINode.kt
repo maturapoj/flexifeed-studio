@@ -2,12 +2,19 @@ package com.flexifeed.app.domain.model
 
 import com.flexifeed.app.domain.action.SDUIAction
 
+data class SDUITheme(
+    val primaryColorHex: String? = null,
+    val accentColorHex: String? = null,
+    val isDarkMode: Boolean = false
+)
+
 /**
  * Screen entity containing the list of root SDUI section nodes.
  */
 data class SDUIScreen(
     val screen: String,
     val version: String,
+    val theme: SDUITheme? = null,
     val sections: List<SDUINode>
 )
 

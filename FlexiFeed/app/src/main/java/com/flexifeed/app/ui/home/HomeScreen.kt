@@ -1,11 +1,7 @@
 package com.flexifeed.app.ui.home
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
@@ -53,11 +48,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,13 +59,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.action.AnalyticsEvent
 import com.flexifeed.app.domain.action.AnalyticsTracker
 import com.flexifeed.app.ui.components.SDUIFeedShimmer
 import com.flexifeed.app.ui.sdui.ActionDispatcher
 import com.flexifeed.app.ui.sdui.SDUIRenderer
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,17 +76,25 @@ fun HomeScreen(
     actionDispatcher: ActionDispatcher,
     modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val cartCount by cartViewModel.totalItemCount.collectAsState()
-    val cartItems by cartViewModel.cartItems.collectAsState()
-    val analyticsEvents by analyticsTracker.events.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val cartCount by cartViewModel.totalItemCount.collectAsStateWithLifecycle()
+    val cartItems by cartViewModel.cartItems.collectAsStateWithLifecycle()
+    val analyticsEvents by analyticsTracker.events.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     var showCartSheet by remember { mutableStateOf(false) }
     var showAnalyticsSheet by remember { mutableStateOf(false) }
     var navigatedTargetUrl by remember { mutableStateOf<String?>(null) }
+
+    val serverThemePrimary = remember(uiState) {
+        val state = uiState
+        if (state is SDUIFeedUiState.Success) {
+            parseHexColor(state.screen.theme?.primaryColorHex, Color(0xFF4F46E5))
+        } else {
+            Color(0xFF4F46E5)
+        }
+    }
 
     // Listen for cart add events to show snackbar
     LaunchedEffect(Unit) {
@@ -110,13 +111,13 @@ fun HomeScreen(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(34.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.primary),
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(serverThemePrimary),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -130,15 +131,15 @@ fun HomeScreen(
                             Text(
                                 text = "FlexiFeed",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Server-Driven UI",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = serverThemePrimary,
                                 fontSize = 10.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -220,6 +221,7 @@ fun HomeScreen(
                 is SDUIFeedUiState.Loading -> {
                     SDUIFeedShimmer(modifier = Modifier.fillMaxSize())
                 }
+
                 is SDUIFeedUiState.Success -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -251,6 +253,7 @@ fun HomeScreen(
                         }
                     }
                 }
+
                 is SDUIFeedUiState.Error -> {
                     Box(
                         modifier = Modifier
@@ -331,7 +334,8 @@ fun CampaignSwitcherBar(
     onSwitchCampaign: (CampaignType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val activeCampaign = (uiState as? SDUIFeedUiState.Success)?.campaign ?: CampaignType.DEFAULT_FEED
+    val activeCampaign =
+        (uiState as? SDUIFeedUiState.Success)?.campaign ?: CampaignType.DEFAULT_FEED
 
     Row(
         modifier = modifier
@@ -377,8 +381,14 @@ fun CampaignSwitcherBar(
 
 @Composable
 fun SDUIInfoBanner(screenName: String, version: String, isLiveServer: Boolean = false) {
-    val containerBg = if (isLiveServer) Color(0xFF10B981).copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-    val borderColor = if (isLiveServer) Color(0xFF10B981).copy(alpha = 0.35f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+    val containerBg =
+        if (isLiveServer) Color(0xFF10B981).copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(
+            alpha = 0.08f
+        )
+    val borderColor =
+        if (isLiveServer) Color(0xFF10B981).copy(alpha = 0.35f) else MaterialTheme.colorScheme.primary.copy(
+            alpha = 0.2f
+        )
     val textColor = if (isLiveServer) Color(0xFF047857) else MaterialTheme.colorScheme.primary
 
     Row(
@@ -633,5 +643,22 @@ fun DeepLinkNavContent(
         }
 
         Spacer(modifier = Modifier.height(30.dp))
+    }
+}
+
+fun parseHexColor(hexString: String?, defaultColor: Color): Color {
+    if (hexString.isNullOrBlank()) return defaultColor
+    return try {
+        val clean = hexString.removePrefix("#")
+        val colorInt = if (clean.length == 6) {
+            (0xFF000000 or clean.toLong(16)).toInt()
+        } else if (clean.length == 8) {
+            clean.toLong(16).toInt()
+        } else {
+            return defaultColor
+        }
+        Color(colorInt)
+    } catch (e: Exception) {
+        defaultColor
     }
 }

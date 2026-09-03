@@ -10,8 +10,22 @@ data class SDUIResponseDTO(
     val screen: String? = null,
     @SerializedName("version")
     val version: String? = null,
+    @SerializedName("theme")
+    val theme: SDUIThemeDTO? = null,
     @SerializedName("sections")
     val sections: List<SDUINodeDTO>? = null
+)
+
+/**
+ * Dynamic theme payload configured from server.
+ */
+data class SDUIThemeDTO(
+    @SerializedName("primaryColor")
+    val primaryColor: String? = null,
+    @SerializedName("accentColor")
+    val accentColor: String? = null,
+    @SerializedName("mode")
+    val mode: String? = null
 )
 
 /**

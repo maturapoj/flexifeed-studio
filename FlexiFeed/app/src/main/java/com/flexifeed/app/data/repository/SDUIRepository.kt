@@ -56,10 +56,18 @@ class SDUIRepository(
     private fun mapToDomain(dto: SDUIResponseDTO?): SDUIScreen {
         val screenName = dto?.screen ?: "UNKNOWN"
         val version = dto?.version ?: "1.0"
+        val theme = dto?.theme?.let {
+            com.flexifeed.app.domain.model.SDUITheme(
+                primaryColorHex = it.primaryColor,
+                accentColorHex = it.accentColor,
+                isDarkMode = it.mode.equals("DARK", ignoreCase = true)
+            )
+        }
         val sections = dto?.sections?.map { mapNode(it) } ?: emptyList()
         return SDUIScreen(
             screen = screenName,
             version = version,
+            theme = theme,
             sections = sections
         )
     }
