@@ -17,7 +17,8 @@
             "payload": {
               "target": "flexifeed://campaign/tech-weekend"
             }
-          }
+          },
+          "props": {}
         },
         {
           "id": "banner_cyber_deals",
@@ -27,7 +28,8 @@
             "payload": {
               "target": "flexifeed://campaign/cyber-deals"
             }
-          }
+          },
+          "props": {}
         }
       ]
     },
@@ -116,5 +118,10 @@
         }
       ]
     }
-  ]
+  ],
+  "theme": {
+    "primaryColor": "#6366f1",
+    "accentColor": "#06b6d4",
+    "mode": "DARK"
+  }
 }

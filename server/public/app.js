@@ -709,9 +709,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. Draggable Split Resizer
   const resizer = document.getElementById('panel-resizer');
   const configPanel = document.getElementById('config-panel');
-  const savedWidth = localStorage.getItem('flexifeed_panel_width');
-  if (configPanel && savedWidth) {
-    configPanel.style.width = `${savedWidth}px`;
+  const savedWidth = localStorage.getItem('flexifeed_panel_width_v2');
+
+  // Ultra-spacious default: 62% of viewport (minimum 1020px on wide screens)
+  const defaultCalculatedWidth = Math.min(Math.max(Math.round(window.innerWidth * 0.62), 1020), window.innerWidth - 440);
+  if (configPanel) {
+    if (savedWidth && parseInt(savedWidth, 10) >= 900) {
+      configPanel.style.width = `${savedWidth}px`;
+    } else {
+      configPanel.style.width = `${defaultCalculatedWidth}px`;
+      localStorage.setItem('flexifeed_panel_width_v2', defaultCalculatedWidth);
+    }
   }
 
   if (resizer && configPanel) {
@@ -725,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      const newWidth = Math.min(Math.max(e.clientX, 400), window.innerWidth - 380);
+      const newWidth = Math.min(Math.max(e.clientX, 700), window.innerWidth - 400);
       configPanel.style.width = `${newWidth}px`;
       updatePhoneZoom();
     });
@@ -736,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resizer.classList.remove('dragging');
         document.body.style.userSelect = '';
         document.body.style.cursor = '';
-        localStorage.setItem('flexifeed_panel_width', configPanel.offsetWidth);
+        localStorage.setItem('flexifeed_panel_width_v2', configPanel.offsetWidth);
         updatePhoneZoom();
       }
     });
