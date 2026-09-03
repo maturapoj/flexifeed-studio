@@ -19,15 +19,42 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        resValue("string", "app_name", "FlexiFeed")
+        buildConfigField("String", "ENVIRONMENT", "\"DEFAULT\"")
         buildConfigField("String", "SDUI_BASE_URL", "\"http://10.0.2.2:8080/\"")
+    }
+
+    flavorDimensions += listOf("environment")
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "FlexiFeed Dev")
+            buildConfigField("String", "ENVIRONMENT", "\"DEV\"")
+            buildConfigField("String", "SDUI_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        }
+        create("sit") {
+            dimension = "environment"
+            applicationIdSuffix = ".sit"
+            versionNameSuffix = "-sit"
+            resValue("string", "app_name", "FlexiFeed SIT")
+            buildConfigField("String", "ENVIRONMENT", "\"SIT\"")
+            buildConfigField("String", "SDUI_BASE_URL", "\"https://sit-api.flexifeed.com/\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "FlexiFeed")
+            buildConfigField("String", "ENVIRONMENT", "\"PROD\"")
+            buildConfigField("String", "SDUI_BASE_URL", "\"https://api.flexifeed.com/\"")
+        }
     }
 
     buildTypes {
         debug {
-            buildConfigField("String", "SDUI_BASE_URL", "\"http://10.0.2.2:8080/\"")
+            // Debug configs
         }
         release {
-            buildConfigField("String", "SDUI_BASE_URL", "\"https://api.flexifeed.com/\"")
             optimization {
                 enable = false
             }
@@ -40,6 +67,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
     testOptions {
         unitTests {

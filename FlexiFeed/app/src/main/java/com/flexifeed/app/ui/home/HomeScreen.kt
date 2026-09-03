@@ -400,9 +400,9 @@ fun SDUIInfoBanner(screenName: String, version: String, isLiveServer: Boolean = 
         )
         Text(
             text = if (isLiveServer) {
-                "🟢 Live SDUI Server (10.0.2.2:8080) • $screenName v$version"
+                "🟢 [${com.flexifeed.app.BuildConfig.ENVIRONMENT}] Live SDUI Server • $screenName v$version"
             } else {
-                "🟠 Offline Fallback Preset • $screenName v$version"
+                "🟠 [${com.flexifeed.app.BuildConfig.ENVIRONMENT}] Offline Fallback • $screenName v$version"
             },
             style = MaterialTheme.typography.bodySmall,
             color = textColor,
