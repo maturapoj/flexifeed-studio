@@ -1,5 +1,6 @@
 package com.flexifeed.app.data.remote
 
+import com.flexifeed.app.BuildConfig
 import com.flexifeed.app.data.model.SDUIResponseDTO
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
@@ -10,10 +11,10 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Retrofit-powered implementation of SDUIService communicating
- * with the Server-Driven UI backend (e.g. Node.js backend on http://10.0.2.2:8080).
+ * with the Server-Driven UI backend (configured via build.gradle.kts BuildConfig).
  */
 class RemoteSDUIService(
-    private val baseUrl: String = "http://10.0.2.2:8080/",
+    val baseUrl: String = BuildConfig.SDUI_BASE_URL,
     private val gson: Gson = Gson(),
     apiClient: SDUIApi? = null
 ) : SDUIService {
