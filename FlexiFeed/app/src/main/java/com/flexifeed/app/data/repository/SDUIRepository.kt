@@ -10,22 +10,37 @@ import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen
 import com.google.gson.Gson
 
+import com.flexifeed.app.data.remote.RemoteSDUIService
+import com.flexifeed.app.data.remote.SDUIService
+
 class SDUIRepository(
-    private val service: MockSDUIService = MockSDUIService(),
+    private val remoteService: SDUIService = RemoteSDUIService(),
+    private val mockService: SDUIService = MockSDUIService(),
     private val gson: Gson = Gson()
 ) {
 
-    val isLiveServerConnected: Boolean
-        get() = service.isLiveServerConnected
+    var isLiveServerConnected: Boolean = false
+        private set
 
     suspend fun fetchHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): Result<SDUIScreen> {
+        // Attempt live fetch via remote SDUIService first
         return try {
-            val jsonString = service.getHomeFeed(campaign)
-            val responseDTO = gson.fromJson(jsonString, SDUIResponseDTO::class.java)
+            val liveJson = remoteService.getHomeFeed(campaign)
+            val responseDTO = gson.fromJson(liveJson, SDUIResponseDTO::class.java)
             val screen = mapToDomain(responseDTO)
+            isLiveServerConnected = true
             Result.success(screen)
-        } catch (e: Exception) {
-            Result.failure(e)
+        } catch (remoteError: Exception) {
+            // Graceful fallback to mock SDUIService when server is offline
+            try {
+                isLiveServerConnected = false
+                val fallbackJson = mockService.getHomeFeed(campaign)
+                val responseDTO = gson.fromJson(fallbackJson, SDUIResponseDTO::class.java)
+                val screen = mapToDomain(responseDTO)
+                Result.success(screen)
+            } catch (fallbackError: Exception) {
+                Result.failure(fallbackError)
+            }
         }
     }
 
