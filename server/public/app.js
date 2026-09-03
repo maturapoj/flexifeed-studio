@@ -1,10 +1,17 @@
-// FlexiFeed Studio - Client Application Logic
+// FlexiFeed Studio - Client Application Logic with Multi-Theme & Resizing Engine
 
 let currentFeed = {
   screen: "HOME_FEED",
   version: "1.0",
+  theme: {
+    primaryColor: "#4F46E5",
+    accentColor: "#FF3366",
+    mode: "LIGHT"
+  },
   sections: []
 };
+
+let currentZoom = 'fit';
 
 // Clock in mobile status bar
 function updateClock() {
@@ -36,9 +43,14 @@ async function loadFeedFromServer() {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
     currentFeed = data;
+    if (!currentFeed.theme) {
+      currentFeed.theme = { primaryColor: "#4F46E5", accentColor: "#FF3366", mode: "LIGHT" };
+    }
     renderVisualBuilder();
+    syncThemeInputs();
     syncJsonEditor();
     renderMobilePreview();
+    updatePhoneZoom();
   } catch (err) {
     console.error('Failed to load feed from server:', err);
     showToast('Failed to connect to SDUI Server', true);
@@ -48,8 +60,9 @@ async function loadFeedFromServer() {
 // Publish feed to server
 async function publishFeedToServer() {
   try {
-    // Read from current form state first
     readFromVisualBuilder();
+    readFromThemeBuilder();
+
     const res = await fetch('/api/v1/home-feed', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -116,435 +129,537 @@ function readFromJsonEditor() {
       throw new Error('Payload must contain sections array');
     }
     currentFeed = parsed;
+    if (!currentFeed.theme) {
+      currentFeed.theme = { primaryColor: "#4F46E5", accentColor: "#FF3366", mode: "LIGHT" };
+    }
     renderVisualBuilder();
+    syncThemeInputs();
     renderMobilePreview();
     return true;
   } catch (e) {
-    showToast('JSON Syntax Error: ' + e.message, true);
+    showToast('Invalid JSON: ' + e.message, true);
     return false;
   }
 }
 
-// Read form values from Visual Builder into currentFeed object
-function readFromVisualBuilder() {
-  const screenInput = document.getElementById('input-screen-name');
-  const versionInput = document.getElementById('input-screen-version');
-  if (screenInput) currentFeed.screen = screenInput.value;
-  if (versionInput) currentFeed.version = versionInput.value;
+// Sync Theme inputs from state
+function syncThemeInputs() {
+  const theme = currentFeed.theme || { primaryColor: "#4F46E5", accentColor: "#FF3366", mode: "LIGHT" };
+  const inputPrimary = document.getElementById('input-theme-primary');
+  const textPrimary = document.getElementById('text-theme-primary');
+  const inputAccent = document.getElementById('input-theme-accent');
+  const textAccent = document.getElementById('text-theme-accent');
+  const selectMode = document.getElementById('select-theme-mode');
+
+  if (inputPrimary) inputPrimary.value = theme.primaryColor || "#4F46E5";
+  if (textPrimary) textPrimary.value = theme.primaryColor || "#4F46E5";
+  if (inputAccent) inputAccent.value = theme.accentColor || "#FF3366";
+  if (textAccent) textAccent.value = theme.accentColor || "#FF3366";
+  if (selectMode) selectMode.value = theme.mode || "LIGHT";
+
+  applyThemeToPreview(theme);
 }
 
-// Render Visual Builder Sections
+// Read Theme inputs into state
+function readFromThemeBuilder() {
+  const inputPrimary = document.getElementById('input-theme-primary');
+  const inputAccent = document.getElementById('input-theme-accent');
+  const selectMode = document.getElementById('select-theme-mode');
+
+  currentFeed.theme = {
+    primaryColor: inputPrimary ? inputPrimary.value : "#4F46E5",
+    accentColor: inputAccent ? inputAccent.value : "#FF3366",
+    mode: selectMode ? selectMode.value : "LIGHT"
+  };
+  applyThemeToPreview(currentFeed.theme);
+}
+
+// Apply App Theme colors to Phone Screen
+function applyThemeToPreview(theme) {
+  const phoneScreen = document.getElementById('phone-screen');
+  if (!phoneScreen) return;
+
+  phoneScreen.style.setProperty('--app-primary', theme.primaryColor || '#4F46E5');
+  phoneScreen.style.setProperty('--app-accent', theme.accentColor || '#FF3366');
+
+  if (theme.mode === 'DARK') {
+    phoneScreen.classList.add('theme-dark');
+  } else {
+    phoneScreen.classList.remove('theme-dark');
+  }
+
+  const logoSub = document.getElementById('mock-logo-sub');
+  if (logoSub) logoSub.style.color = theme.primaryColor;
+
+  const logoBox = document.getElementById('mock-logo-box');
+  if (logoBox) logoBox.style.background = theme.primaryColor;
+
+  const cartBadge = document.getElementById('mock-cart-badge');
+  if (cartBadge) cartBadge.style.background = theme.accentColor;
+}
+
+// Read Screen Meta & Sections from Visual Builder inputs
+function readFromVisualBuilder() {
+  const screenNameInput = document.getElementById('input-screen-name');
+  const screenVersionInput = document.getElementById('input-screen-version');
+  if (screenNameInput) currentFeed.screen = screenNameInput.value.trim();
+  if (screenVersionInput) currentFeed.version = screenVersionInput.value.trim();
+
+  // Read props and items from rendered DOM
+  const sectionCards = document.querySelectorAll('.section-card');
+  const updatedSections = [];
+
+  sectionCards.forEach((card) => {
+    const sectionIndex = parseInt(card.dataset.sectionIndex, 10);
+    const existingSection = currentFeed.sections[sectionIndex];
+    if (!existingSection) return;
+
+    const newSection = { ...existingSection, props: { ...existingSection.props } };
+
+    // Read props
+    card.querySelectorAll('[data-prop-key]').forEach(input => {
+      const key = input.dataset.propKey;
+      let val = input.value;
+      if (input.type === 'number') val = parseInt(val, 10) || 0;
+      newSection.props[key] = val;
+    });
+
+    // Read items
+    const itemRows = card.querySelectorAll('.item-row-card');
+    const newItems = [];
+    itemRows.forEach((row) => {
+      const itemIndex = parseInt(row.dataset.itemIndex, 10);
+      const existingItem = existingSection.items[itemIndex] || {};
+      const newItem = { ...existingItem, props: { ...(existingItem.props || {}) } };
+
+      row.querySelectorAll('[data-item-prop]').forEach(field => {
+        const propName = field.dataset.itemProp;
+        if (propName === 'imageUrl') {
+          newItem.imageUrl = field.value;
+        } else if (propName === 'target') {
+          if (!newItem.action) newItem.action = { type: 'NAVIGATE', payload: {} };
+          if (!newItem.action.payload) newItem.action.payload = {};
+          newItem.action.payload.target = field.value;
+        } else {
+          newItem.props[propName] = field.value;
+        }
+      });
+      newItems.push(newItem);
+    });
+
+    newSection.items = newItems;
+    updatedSections.push(newSection);
+  });
+
+  currentFeed.sections = updatedSections;
+}
+
+// Render Visual Builder Form
 function renderVisualBuilder() {
   const container = document.getElementById('sections-container');
   if (!container) return;
-
-  const screenInput = document.getElementById('input-screen-name');
-  const versionInput = document.getElementById('input-screen-version');
-  if (screenInput) screenInput.value = currentFeed.screen || 'HOME_FEED';
-  if (versionInput) versionInput.value = currentFeed.version || '1.0';
-
   container.innerHTML = '';
 
-  currentFeed.sections.forEach((sec, secIndex) => {
+  const screenNameInput = document.getElementById('input-screen-name');
+  const screenVersionInput = document.getElementById('input-screen-version');
+  if (screenNameInput) screenNameInput.value = currentFeed.screen || 'HOME_FEED';
+  if (screenVersionInput) screenVersionInput.value = currentFeed.version || '1.0';
+
+  currentFeed.sections.forEach((section, sIndex) => {
     const card = document.createElement('div');
     card.className = 'section-card';
-    card.dataset.index = secIndex;
+    card.dataset.sectionIndex = sIndex;
 
-    const badgeClass = sec.type === 'CAROUSEL' ? 'badge-carousel' : (sec.type === 'HORIZONTAL_LIST' ? 'badge-horizontal' : 'badge-grid');
+    const badgeClass = section.type === 'CAROUSEL' ? 'badge-carousel' :
+      section.type === 'HORIZONTAL_LIST' ? 'badge-horizontal' : 'badge-grid';
 
+    // Card Header
     card.innerHTML = `
       <div class="section-card-header">
         <div class="section-card-title">
-          <span class="section-type-badge ${badgeClass}">${sec.type}</span>
-          <span class="section-id-tag">#${sec.id}</span>
+          <span class="section-type-badge ${badgeClass}">${section.type}</span>
+          <span class="section-id-tag">${section.id}</span>
         </div>
         <div class="section-card-actions">
-          <button class="btn-icon" title="Move Up" onclick="moveSection(${secIndex}, -1)">▲</button>
-          <button class="btn-icon" title="Move Down" onclick="moveSection(${secIndex}, 1)">▼</button>
-          <button class="btn-icon delete" title="Delete Section" onclick="deleteSection(${secIndex})">✕</button>
+          <button class="btn-icon" onclick="moveSection(${sIndex}, -1)" title="Move Up" ${sIndex === 0 ? 'disabled style="opacity:0.3"' : ''}>⬆️</button>
+          <button class="btn-icon" onclick="moveSection(${sIndex}, 1)" title="Move Down" ${sIndex === currentFeed.sections.length - 1 ? 'disabled style="opacity:0.3"' : ''}>⬇️</button>
+          <button class="btn-icon delete" onclick="deleteSection(${sIndex})" title="Delete Section">🗑️</button>
         </div>
       </div>
       <div class="section-card-body">
-        <!-- Section Props -->
-        <div class="section-props-grid">
-          <div class="form-group">
-            <label>Section ID</label>
-            <input type="text" class="input-text" value="${sec.id}" onchange="updateSectionId(${secIndex}, this.value)">
-          </div>
-          ${renderSectionPropFields(sec, secIndex)}
+        <div class="section-props-grid" id="props-grid-${sIndex}">
+          <!-- Section Props dynamically generated below -->
         </div>
 
-        <!-- Section Items Header -->
-        <div class="items-list-header">
-          <h4>Items (${(sec.items || []).length})</h4>
-          <button class="btn btn-sm btn-secondary" onclick="addItemToSection(${secIndex})">➕ Add Item</button>
+        <div class="section-items-header">
+          <span>Items (${section.items ? section.items.length : 0})</span>
+          <button class="btn btn-sm btn-ghost" onclick="addItemToSection(${sIndex})">➕ Add Item</button>
         </div>
-
-        <!-- Items Container -->
-        <div class="items-container">
-          ${(sec.items || []).map((item, itemIndex) => renderItemRow(item, secIndex, itemIndex, sec.type)).join('')}
+        <div class="items-list-container" id="items-list-${sIndex}">
+          <!-- Items dynamically generated below -->
         </div>
       </div>
     `;
 
     container.appendChild(card);
+
+    // Populate Props
+    const propsGrid = card.querySelector(`#props-grid-${sIndex}`);
+    if (section.type === 'CAROUSEL') {
+      propsGrid.innerHTML = `
+        <div class="form-group">
+          <label>Auto-Scroll Interval (ms)</label>
+          <input type="number" class="input-text" data-prop-key="autoScrollInterval" value="${section.props?.autoScrollInterval || 4000}" step="500">
+        </div>
+      `;
+    } else if (section.type === 'HORIZONTAL_LIST') {
+      propsGrid.innerHTML = `
+        <div class="form-group">
+          <label>Section Title</label>
+          <input type="text" class="input-text" data-prop-key="title" value="${section.props?.title || '⚡ Flash Sale'}">
+        </div>
+        <div class="form-group">
+          <label>Countdown Timer (sec)</label>
+          <input type="number" class="input-text" data-prop-key="countdownRemainingSec" value="${section.props?.countdownRemainingSec || 7200}">
+        </div>
+      `;
+    } else if (section.type === 'GRID_2X2') {
+      propsGrid.innerHTML = `
+        <div class="form-group">
+          <label>Grid Section Title</label>
+          <input type="text" class="input-text" data-prop-key="title" value="${section.props?.title || 'สินค้าแนะนำสำหรับคุณ'}">
+        </div>
+      `;
+    }
+
+    // Attach live change listener to props
+    propsGrid.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        readFromVisualBuilder();
+        renderMobilePreview();
+        syncJsonEditor();
+      });
+    });
+
+    // Populate Items
+    const itemsList = card.querySelector(`#items-list-${sIndex}`);
+    (section.items || []).forEach((item, iIndex) => {
+      const itemRow = document.createElement('div');
+      itemRow.className = 'item-row-card';
+      itemRow.dataset.itemIndex = iIndex;
+
+      const imgUrl = item.imageUrl || item.props?.thumbnailUrl || 'https://picsum.photos/200/200';
+
+      if (section.type === 'CAROUSEL') {
+        itemRow.innerHTML = `
+          <img src="${imgUrl}" class="item-thumb-preview" alt="Slide">
+          <div class="item-details-grid">
+            <div class="form-group">
+              <label>Banner Image URL</label>
+              <input type="text" class="input-text" data-item-prop="imageUrl" value="${item.imageUrl || ''}">
+            </div>
+            <div class="form-group">
+              <label>Navigation Target Deep Link</label>
+              <input type="text" class="input-text" data-item-prop="target" value="${item.action?.payload?.target || ''}">
+            </div>
+          </div>
+          <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Slide">✕</button>
+        `;
+      } else if (section.type === 'HORIZONTAL_LIST') {
+        itemRow.innerHTML = `
+          <img src="${imgUrl}" class="item-thumb-preview" alt="Product">
+          <div class="item-details-grid">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" class="input-text" data-item-prop="name" value="${item.props?.name || ''}">
+            </div>
+            <div class="form-group">
+              <label>Price</label>
+              <input type="text" class="input-text" data-item-prop="price" value="${item.props?.price || ''}">
+            </div>
+            <div class="form-group">
+              <label>Original Price</label>
+              <input type="text" class="input-text" data-item-prop="originalPrice" value="${item.props?.originalPrice || ''}">
+            </div>
+            <div class="form-group">
+              <label>Thumbnail URL</label>
+              <input type="text" class="input-text" data-item-prop="thumbnailUrl" value="${item.props?.thumbnailUrl || ''}">
+            </div>
+          </div>
+          <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Product">✕</button>
+        `;
+      } else if (section.type === 'GRID_2X2') {
+        itemRow.innerHTML = `
+          <img src="${imgUrl}" class="item-thumb-preview" alt="Product">
+          <div class="item-details-grid">
+            <div class="form-group">
+              <label>Product Name</label>
+              <input type="text" class="input-text" data-item-prop="name" value="${item.props?.name || ''}">
+            </div>
+            <div class="form-group">
+              <label>Price</label>
+              <input type="text" class="input-text" data-item-prop="price" value="${item.props?.price || ''}">
+            </div>
+            <div class="form-group">
+              <label>Thumbnail URL</label>
+              <input type="text" class="input-text" data-item-prop="thumbnailUrl" value="${item.props?.thumbnailUrl || ''}">
+            </div>
+          </div>
+          <button class="btn-icon delete" onclick="deleteItemFromSection(${sIndex}, ${iIndex})" title="Remove Item">✕</button>
+        `;
+      }
+
+      itemRow.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          readFromVisualBuilder();
+          renderMobilePreview();
+          syncJsonEditor();
+        });
+      });
+
+      itemsList.appendChild(itemRow);
+    });
   });
 }
 
-function renderSectionPropFields(sec, secIndex) {
-  const props = sec.props || {};
-  if (sec.type === 'CAROUSEL') {
-    return `
-      <div class="form-group">
-        <label>Auto-scroll Interval (ms)</label>
-        <input type="number" class="input-text" value="${props.autoScrollInterval || 4000}" step="500" min="1000" onchange="updateProp(${secIndex}, 'autoScrollInterval', Number(this.value))">
-      </div>
-    `;
-  } else if (sec.type === 'HORIZONTAL_LIST') {
-    return `
-      <div class="form-group">
-        <label>Header Title</label>
-        <input type="text" class="input-text" value="${props.title || '⚡ Flash Sale'}" onchange="updateProp(${secIndex}, 'title', this.value)">
-      </div>
-      <div class="form-group">
-        <label>Countdown (seconds)</label>
-        <input type="number" class="input-text" value="${props.countdownRemainingSec || 7200}" onchange="updateProp(${secIndex}, 'countdownRemainingSec', Number(this.value))">
-      </div>
-    `;
-  } else if (sec.type === 'GRID_2X2') {
-    return `
-      <div class="form-group">
-        <label>Header Title</label>
-        <input type="text" class="input-text" value="${props.title || 'สินค้าแนะนำสำหรับคุณ'}" onchange="updateProp(${secIndex}, 'title', this.value)">
-      </div>
-    `;
-  }
-  return '';
-}
-
-function renderItemRow(item, secIndex, itemIndex, sectionType) {
-  const props = item.props || {};
-  const imgUrl = item.imageUrl || props.thumbnailUrl || props.imageUrl || 'https://picsum.photos/200/200';
-  const name = props.name || item.id;
-  const price = props.price || '';
-  const origPrice = props.originalPrice || '';
-
-  if (sectionType === 'CAROUSEL') {
-    const target = (item.action && item.action.payload && item.action.payload.target) || '';
-    return `
-      <div class="item-row-card">
-        <img class="item-thumb" src="${imgUrl}" alt="" onerror="this.src='https://picsum.photos/200/100'">
-        <div class="item-fields" style="grid-template-columns: 1fr 2fr;">
-          <div class="form-group">
-            <label>Banner Image URL</label>
-            <input type="text" class="input-text" value="${item.imageUrl || ''}" onchange="updateCarouselItemImage(${secIndex}, ${itemIndex}, this.value)">
-          </div>
-          <div class="form-group">
-            <label>Click Target URL</label>
-            <input type="text" class="input-text" value="${target}" onchange="updateCarouselItemTarget(${secIndex}, ${itemIndex}, this.value)">
-          </div>
-        </div>
-        <button class="btn-icon delete" title="Delete" onclick="deleteItemFromSection(${secIndex}, ${itemIndex})">✕</button>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="item-row-card">
-      <img class="item-thumb" src="${imgUrl}" alt="" onerror="this.src='https://picsum.photos/200/200'">
-      <div class="item-fields">
-        <div class="form-group">
-          <label>Product Name</label>
-          <input type="text" class="input-text" value="${name}" onchange="updateItemProp(${secIndex}, ${itemIndex}, 'name', this.value)">
-        </div>
-        <div class="form-group">
-          <label>Price</label>
-          <input type="text" class="input-text" value="${price}" onchange="updateItemProp(${secIndex}, ${itemIndex}, 'price', this.value)">
-        </div>
-        ${sectionType === 'HORIZONTAL_LIST' ? `
-          <div class="form-group">
-            <label>Original Price</label>
-            <input type="text" class="input-text" value="${origPrice}" onchange="updateItemProp(${secIndex}, ${itemIndex}, 'originalPrice', this.value)">
-          </div>
-        ` : `
-          <div class="form-group">
-            <label>Rating (1-5)</label>
-            <input type="number" step="0.1" max="5" min="1" class="input-text" value="${props.rating || 4.8}" onchange="updateItemProp(${secIndex}, ${itemIndex}, 'rating', Number(this.value))">
-          </div>
-        `}
-      </div>
-      <button class="btn-icon delete" title="Delete" onclick="deleteItemFromSection(${secIndex}, ${itemIndex})">✕</button>
-    </div>
-  `;
-}
-
-// Component mutations
+// Section Actions
 window.moveSection = function(index, direction) {
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= currentFeed.sections.length) return;
+  readFromVisualBuilder();
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= currentFeed.sections.length) return;
   const temp = currentFeed.sections[index];
-  currentFeed.sections[index] = currentFeed.sections[newIndex];
-  currentFeed.sections[newIndex] = temp;
+  currentFeed.sections[index] = currentFeed.sections[targetIndex];
+  currentFeed.sections[targetIndex] = temp;
   renderVisualBuilder();
-  syncJsonEditor();
   renderMobilePreview();
+  syncJsonEditor();
 };
 
 window.deleteSection = function(index) {
+  readFromVisualBuilder();
   currentFeed.sections.splice(index, 1);
   renderVisualBuilder();
-  syncJsonEditor();
   renderMobilePreview();
-};
-
-window.updateSectionId = function(secIndex, newId) {
-  currentFeed.sections[secIndex].id = newId;
   syncJsonEditor();
 };
 
-window.updateProp = function(secIndex, propKey, value) {
-  if (!currentFeed.sections[secIndex].props) currentFeed.sections[secIndex].props = {};
-  currentFeed.sections[secIndex].props[propKey] = value;
-  syncJsonEditor();
-  renderMobilePreview();
-};
-
-window.updateItemProp = function(secIndex, itemIndex, key, value) {
-  const item = currentFeed.sections[secIndex].items[itemIndex];
-  if (!item.props) item.props = {};
-  item.props[key] = value;
-  syncJsonEditor();
-  renderMobilePreview();
-};
-
-window.updateCarouselItemImage = function(secIndex, itemIndex, value) {
-  const item = currentFeed.sections[secIndex].items[itemIndex];
-  item.imageUrl = value;
-  syncJsonEditor();
-  renderMobilePreview();
-};
-
-window.updateCarouselItemTarget = function(secIndex, itemIndex, value) {
-  const item = currentFeed.sections[secIndex].items[itemIndex];
-  if (!item.action) item.action = { type: 'NAVIGATE', payload: {} };
-  if (!item.action.payload) item.action.payload = {};
-  item.action.payload.target = value;
-  syncJsonEditor();
-};
-
-window.deleteItemFromSection = function(secIndex, itemIndex) {
-  currentFeed.sections[secIndex].items.splice(itemIndex, 1);
-  renderVisualBuilder();
-  syncJsonEditor();
-  renderMobilePreview();
-};
-
-window.addItemToSection = function(secIndex) {
-  const sec = currentFeed.sections[secIndex];
+window.addItemToSection = function(sectionIndex) {
+  readFromVisualBuilder();
+  const sec = currentFeed.sections[sectionIndex];
+  if (!sec) return;
   if (!sec.items) sec.items = [];
-  const nextNum = sec.items.length + 1;
 
+  const randId = Date.now();
   if (sec.type === 'CAROUSEL') {
     sec.items.push({
-      id: `banner_slide_${Date.now()}`,
-      imageUrl: `https://picsum.photos/id/${100 + nextNum}/800/400`,
-      action: { type: 'NAVIGATE', payload: { target: `flexifeed://campaign/new-${nextNum}` } }
+      id: `banner_${randId}`,
+      imageUrl: `https://picsum.photos/id/${Math.floor(Math.random() * 50) + 100}/800/400`,
+      action: { type: 'NAVIGATE', payload: { target: `flexifeed://campaign/new-${sec.items.length + 1}` } }
     });
   } else if (sec.type === 'HORIZONTAL_LIST') {
     sec.items.push({
-      id: `prod_${Date.now()}`,
+      id: `prod_${randId}`,
       type: 'PRODUCT_CARD_COMPACT',
       props: {
-        name: `สินค้า Flash Sale #${nextNum}`,
+        name: `สินค้า Flash Sale #${sec.items.length + 1}`,
         price: '฿599',
         originalPrice: '฿1,200',
-        thumbnailUrl: `https://picsum.photos/id/${200 + nextNum}/200/200`
+        thumbnailUrl: `https://picsum.photos/id/${Math.floor(Math.random() * 50) + 200}/200/200`
       },
-      action: { type: 'NAVIGATE', payload: { target: `flexifeed://product/${Date.now()}` } }
+      action: { type: 'NAVIGATE', payload: { target: `flexifeed://product/${randId}` } }
     });
   } else if (sec.type === 'GRID_2X2') {
     sec.items.push({
-      id: `prod_grid_${Date.now()}`,
+      id: `prod_grid_${randId}`,
       type: 'PRODUCT_CARD_FULL',
       props: {
-        name: `สินค้าแนะนำใหม่ #${nextNum}`,
+        name: `สินค้าแนะนำใหม่ #${sec.items.length + 1}`,
         price: '฿1,890',
         rating: 4.9,
-        thumbnailUrl: `https://picsum.photos/id/${300 + nextNum}/300/300`
+        thumbnailUrl: `https://picsum.photos/id/${Math.floor(Math.random() * 50) + 300}/300/300`
       },
-      action: { type: 'ADD_TO_CART', payload: { productId: `${Date.now()}`, quantity: 1 } }
+      action: { type: 'ADD_TO_CART', payload: { productId: `${randId}`, quantity: 1 } }
     });
   }
-
   renderVisualBuilder();
-  syncJsonEditor();
   renderMobilePreview();
+  syncJsonEditor();
 };
 
-// Add New Section
-function addNewSection(type) {
-  const randomId = Math.floor(Math.random() * 900) + 100;
-  let newSection;
+window.deleteItemFromSection = function(sectionIndex, itemIndex) {
+  readFromVisualBuilder();
+  const sec = currentFeed.sections[sectionIndex];
+  if (sec && sec.items) {
+    sec.items.splice(itemIndex, 1);
+    renderVisualBuilder();
+    renderMobilePreview();
+    syncJsonEditor();
+  }
+};
 
+function addNewSection(type) {
+  readFromVisualBuilder();
+  const randId = Date.now();
   if (type === 'CAROUSEL') {
-    newSection = {
-      id: `sec_carousel_${randomId}`,
+    currentFeed.sections.push({
+      id: `sec_carousel_${randId}`,
       type: 'CAROUSEL',
       props: { autoScrollInterval: 4000 },
       items: [
         {
-          id: `banner_${randomId}`,
-          imageUrl: 'https://picsum.photos/800/400',
-          action: { type: 'NAVIGATE', payload: { target: 'flexifeed://campaign/featured' } }
+          id: `banner_${randId}`,
+          imageUrl: 'https://picsum.photos/id/1018/800/400',
+          action: { type: 'NAVIGATE', payload: { target: 'flexifeed://campaign/new-banner' } }
         }
       ]
-    };
+    });
   } else if (type === 'HORIZONTAL_LIST') {
-    newSection = {
-      id: `sec_flash_${randomId}`,
+    currentFeed.sections.push({
+      id: `sec_flash_${randId}`,
       type: 'HORIZONTAL_LIST',
-      props: { title: '⚡ Flash Sale ด่วนพิเศษ', countdownRemainingSec: 5400 },
+      props: { title: '⚡ Flash Sale พิเศษ', countdownRemainingSec: 3600 },
       items: [
         {
-          id: `prod_flash_${randomId}`,
+          id: `prod_${randId}`,
           type: 'PRODUCT_CARD_COMPACT',
           props: {
-            name: 'สินค้าลดราคาพิเศษ',
-            price: '฿790',
-            originalPrice: '฿1,590',
-            thumbnailUrl: 'https://picsum.photos/200/200'
+            name: 'สินค้า Flash Sale ใหม่',
+            price: '฿390',
+            originalPrice: '฿890',
+            thumbnailUrl: 'https://picsum.photos/id/20/200/200'
           },
-          action: { type: 'NAVIGATE', payload: { target: `flexifeed://product/${randomId}` } }
+          action: { type: 'NAVIGATE', payload: { target: `flexifeed://product/${randId}` } }
         }
       ]
-    };
-  } else {
-    newSection = {
-      id: `sec_grid_${randomId}`,
+    });
+  } else if (type === 'GRID_2X2') {
+    currentFeed.sections.push({
+      id: `sec_grid_${randId}`,
       type: 'GRID_2X2',
       props: { title: 'สินค้าแนะนำยอดนิยม' },
       items: [
         {
-          id: `prod_grid_${randomId}`,
+          id: `prod_g_${randId}`,
           type: 'PRODUCT_CARD_FULL',
           props: {
-            name: 'สินค้าคุณภาพแนะนำ',
+            name: 'สินค้าแนะนำพิเศษ',
             price: '฿1,490',
-            rating: 4.9,
-            thumbnailUrl: 'https://picsum.photos/300/300'
+            rating: 5.0,
+            thumbnailUrl: 'https://picsum.photos/id/40/300/300'
           },
-          action: { type: 'ADD_TO_CART', payload: { productId: `${randomId}`, quantity: 1 } }
+          action: { type: 'ADD_TO_CART', payload: { productId: `${randId}`, quantity: 1 } }
         }
       ]
-    };
+    });
   }
-
-  currentFeed.sections.push(newSection);
   renderVisualBuilder();
-  syncJsonEditor();
   renderMobilePreview();
-  showToast(`Added ${type} section`);
+  syncJsonEditor();
 }
 
-// Render Live Mobile Phone Preview
+// Render Real-Time Mobile Emulator Preview
 function renderMobilePreview() {
   const scrollContainer = document.getElementById('mock-feed-scrollable');
   if (!scrollContainer) return;
-
   scrollContainer.innerHTML = '';
 
-  // SDUI Info Pill
-  const pill = document.createElement('div');
-  pill.style.padding = '4px 12px';
-  pill.style.background = 'rgba(79, 70, 229, 0.08)';
-  pill.style.border = '1px solid rgba(79, 70, 229, 0.2)';
-  pill.style.borderRadius = '6px';
-  pill.style.margin = '8px 14px 0';
-  pill.style.fontSize = '9px';
-  pill.style.fontWeight = '600';
-  pill.style.color = '#4F46E5';
-  pill.textContent = `Rendered via SDUI DSL (Screen: ${currentFeed.screen} v${currentFeed.version})`;
-  scrollContainer.appendChild(pill);
+  const bannerText = document.getElementById('mock-banner-text');
+  if (bannerText) {
+    bannerText.textContent = `🟢 [DEV] Live SDUI Server • ${currentFeed.screen || 'HOME_FEED'} v${currentFeed.version || '1.0'}`;
+  }
 
-  (currentFeed.sections || []).forEach(sec => {
-    if (sec.type === 'CAROUSEL') {
+  applyThemeToPreview(currentFeed.theme || {});
+
+  currentFeed.sections.forEach(section => {
+    if (section.type === 'CAROUSEL') {
       const carouselWrap = document.createElement('div');
       carouselWrap.className = 'mock-carousel';
-      const items = sec.items || [];
-      const firstItem = items[0] || {};
-      const imgUrl = firstItem.imageUrl || (firstItem.props && firstItem.props.imageUrl) || 'https://picsum.photos/800/400';
-
+      const firstSlide = (section.items && section.items[0]) ? section.items[0].imageUrl : 'https://picsum.photos/800/400';
+      const dotCount = Math.min((section.items ? section.items.length : 1), 5);
+      let dotsHtml = '';
+      for (let i = 0; i < dotCount; i++) {
+        dotsHtml += `<span class="mock-dot ${i === 0 ? 'active' : ''}"></span>`;
+      }
       carouselWrap.innerHTML = `
         <div class="mock-carousel-slide">
-          <img src="${imgUrl}" alt="Banner">
+          <img src="${firstSlide}" alt="Banner">
         </div>
         <div class="mock-carousel-dots">
-          ${items.map((_, i) => `<div class="mock-dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+          ${dotsHtml}
         </div>
       `;
       scrollContainer.appendChild(carouselWrap);
-    } else if (sec.type === 'HORIZONTAL_LIST') {
+    } else if (section.type === 'HORIZONTAL_LIST') {
       const flashWrap = document.createElement('div');
       flashWrap.className = 'mock-flash-sale';
-      const props = sec.props || {};
-      const title = props.title || '⚡ Flash Sale';
-      const secRemaining = props.countdownRemainingSec || 7200;
-      const hours = String(Math.floor(secRemaining / 3600)).padStart(2, '0');
-      const mins = String(Math.floor((secRemaining % 3600) / 60)).padStart(2, '0');
-      const secs = String(secRemaining % 60).padStart(2, '0');
+
+      const secTitle = section.props?.title || '⚡ Flash Sale';
+      const remainingSec = section.props?.countdownRemainingSec || 7200;
+      const hours = String(Math.floor(remainingSec / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((remainingSec % 3600) / 60)).padStart(2, '0');
+      const secs = String(remainingSec % 60).padStart(2, '0');
+
+      let productsHtml = '';
+      (section.items || []).forEach(item => {
+        const thumb = item.props?.thumbnailUrl || 'https://picsum.photos/200/200';
+        const name = item.props?.name || 'สินค้าโปรโมชั่น';
+        const price = item.props?.price || '฿0';
+        const origPrice = item.props?.originalPrice || '';
+        productsHtml += `
+          <div class="product-compact-card">
+            <div class="compact-thumb-wrap">
+              <span class="sale-pill">SALE</span>
+              <img src="${thumb}" alt="${name}">
+            </div>
+            <div class="compact-title">${name}</div>
+            <div class="compact-price-row">
+              <span class="price-active">${price}</span>
+              ${origPrice ? `<span class="price-strike">${origPrice}</span>` : ''}
+            </div>
+          </div>
+        `;
+      });
 
       flashWrap.innerHTML = `
-        <div class="mock-section-header">
-          <div class="mock-section-title">${title}</div>
-          <div class="mock-timer-badge">⏱ ${hours}:${mins}:${secs}</div>
+        <div class="flash-header">
+          <div class="flash-title">${secTitle}</div>
+          <div class="flash-countdown">⏱️ ${hours}:${mins}:${secs}</div>
         </div>
-        <div class="mock-horizontal-row">
-          ${(sec.items || []).map(item => {
-            const iprops = item.props || {};
-            const img = iprops.thumbnailUrl || iprops.imageUrl || 'https://picsum.photos/200/200';
-            return `
-              <div class="mock-compact-card">
-                <div class="thumb-wrap">
-                  <img src="${img}" alt="">
-                  <span class="sale-tag">SALE</span>
-                </div>
-                <div class="p-name">${iprops.name || 'สินค้า'}</div>
-                <div class="price-row">
-                  <span class="price">${iprops.price || '฿0'}</span>
-                  ${iprops.originalPrice ? `<span class="orig-price">${iprops.originalPrice}</span>` : ''}
-                </div>
-              </div>
-            `;
-          }).join('')}
+        <div class="flash-scroll-row">
+          ${productsHtml}
         </div>
       `;
       scrollContainer.appendChild(flashWrap);
-    } else if (sec.type === 'GRID_2X2') {
+    } else if (section.type === 'GRID_2X2') {
       const gridWrap = document.createElement('div');
       gridWrap.className = 'mock-grid-section';
-      const props = sec.props || {};
-      const title = props.title || 'สินค้าแนะนำสำหรับคุณ';
+      const secTitle = section.props?.title || 'สินค้าแนะนำ';
+
+      let itemsHtml = '';
+      (section.items || []).forEach(item => {
+        const thumb = item.props?.thumbnailUrl || 'https://picsum.photos/300/300';
+        const name = item.props?.name || 'สินค้า';
+        const price = item.props?.price || '฿0';
+        const rating = item.props?.rating || 4.8;
+        itemsHtml += `
+          <div class="product-full-card">
+            <div class="full-thumb-wrap">
+              <img src="${thumb}" alt="${name}">
+            </div>
+            <div class="full-title">${name}</div>
+            <div class="full-rating">★ ${rating}</div>
+            <div class="full-footer-row">
+              <span class="full-price">${price}</span>
+              <button class="btn-add-cart-mock" title="Add to Cart">＋</button>
+            </div>
+          </div>
+        `;
+      });
 
       gridWrap.innerHTML = `
-        <div class="mock-section-header">
-          <div class="mock-section-title">${title}</div>
-        </div>
-        <div class="mock-grid-2x2">
-          ${(sec.items || []).map(item => {
-            const iprops = item.props || {};
-            const img = iprops.thumbnailUrl || iprops.imageUrl || 'https://picsum.photos/300/300';
-            return `
-              <div class="mock-grid-card">
-                <div class="thumb-wrap">
-                  <img src="${img}" alt="">
-                  ${iprops.rating ? `<span class="rating-tag">★ ${iprops.rating}</span>` : ''}
-                </div>
-                <div class="p-name">${iprops.name || 'สินค้า'}</div>
-                <div class="price">${iprops.price || '฿0'}</div>
-                <button class="btn-add">🛒 ใส่ตะกร้า</button>
-              </div>
-            `;
-          }).join('')}
+        <div class="grid-section-title">${secTitle}</div>
+        <div class="mock-grid-container">
+          ${itemsHtml}
         </div>
       `;
       scrollContainer.appendChild(gridWrap);
@@ -552,32 +667,188 @@ function renderMobilePreview() {
   });
 }
 
-// Wire Event Listeners
+// Dynamic Phone Auto-Fit & Zoom Calculation
+function updatePhoneZoom() {
+  const container = document.getElementById('phone-viewport-container');
+  const frame = document.getElementById('phone-frame');
+  const wrapper = document.getElementById('phone-wrapper');
+  if (!container || !frame || !wrapper) return;
+
+  if (currentZoom === 'fit') {
+    const availH = container.clientHeight - 24;
+    const availW = container.clientWidth - 24;
+    const scaleH = availH / frame.offsetHeight;
+    const scaleW = availW / frame.offsetWidth;
+    const fitScale = Math.min(1.0, Math.max(0.4, Math.min(scaleH, scaleW)));
+    wrapper.style.transform = `scale(${fitScale})`;
+  } else {
+    wrapper.style.transform = `scale(${parseFloat(currentZoom)})`;
+  }
+}
+window.addEventListener('resize', updatePhoneZoom);
+
+// Wire Up Everything on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
-  // Tabs
+  // 1. Studio Theme Switcher
+  const themeSelect = document.getElementById('select-studio-theme');
+  const savedTheme = localStorage.getItem('flexifeed_studio_theme') || 'neon';
+  if (themeSelect) {
+    themeSelect.value = savedTheme;
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeSelect.addEventListener('change', (e) => {
+      const selected = e.target.value;
+      document.documentElement.setAttribute('data-theme', selected);
+      localStorage.setItem('flexifeed_studio_theme', selected);
+    });
+  }
+
+  // 2. Draggable Split Resizer
+  const resizer = document.getElementById('panel-resizer');
+  const configPanel = document.getElementById('config-panel');
+  const savedWidth = localStorage.getItem('flexifeed_panel_width');
+  if (configPanel && savedWidth) {
+    configPanel.style.width = `${savedWidth}px`;
+  }
+
+  if (resizer && configPanel) {
+    let isDragging = false;
+    resizer.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      resizer.classList.add('dragging');
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const newWidth = Math.min(Math.max(e.clientX, 400), window.innerWidth - 380);
+      configPanel.style.width = `${newWidth}px`;
+      updatePhoneZoom();
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        resizer.classList.remove('dragging');
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        localStorage.setItem('flexifeed_panel_width', configPanel.offsetWidth);
+        updatePhoneZoom();
+      }
+    });
+  }
+
+  // 3. Tabs (Visual / Theme / JSON)
   const tabVisual = document.getElementById('tab-btn-visual');
+  const tabTheme = document.getElementById('tab-btn-theme');
   const tabJson = document.getElementById('tab-btn-json');
   const panelVisual = document.getElementById('panel-visual');
+  const panelTheme = document.getElementById('panel-theme');
   const panelJson = document.getElementById('panel-json');
 
+  function activateTab(activeTabBtn, activePanel) {
+    [tabVisual, tabTheme, tabJson].forEach(b => b.classList.remove('active'));
+    [panelVisual, panelTheme, panelJson].forEach(p => p.classList.remove('active'));
+    activeTabBtn.classList.add('active');
+    activePanel.classList.add('active');
+  }
+
   tabVisual.addEventListener('click', () => {
-    tabVisual.classList.add('active');
-    tabJson.classList.remove('active');
-    panelVisual.classList.add('active');
-    panelJson.classList.remove('active');
+    activateTab(tabVisual, panelVisual);
     readFromJsonEditor();
   });
 
+  tabTheme.addEventListener('click', () => {
+    activateTab(tabTheme, panelTheme);
+    syncThemeInputs();
+  });
+
   tabJson.addEventListener('click', () => {
-    tabJson.classList.add('active');
-    tabVisual.classList.remove('active');
-    panelJson.classList.add('active');
-    panelVisual.classList.remove('active');
+    activateTab(tabJson, panelJson);
     readFromVisualBuilder();
+    readFromThemeBuilder();
     syncJsonEditor();
   });
 
-  // Buttons
+  // 4. Device Sizing & Zoom Controls
+  const deviceSelect = document.getElementById('select-device-size');
+  const phoneFrame = document.getElementById('phone-frame');
+  if (deviceSelect && phoneFrame) {
+    deviceSelect.addEventListener('change', (e) => {
+      phoneFrame.className = `phone-frame device-${e.target.value}`;
+      updatePhoneZoom();
+    });
+  }
+
+  const zoomBtns = document.querySelectorAll('.btn-zoom');
+  zoomBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      zoomBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentZoom = btn.dataset.zoom;
+      updatePhoneZoom();
+    });
+  });
+
+  // 5. App Dynamic Theme Color Pickers & Palette Swatches
+  const inPrimary = document.getElementById('input-theme-primary');
+  const txtPrimary = document.getElementById('text-theme-primary');
+  const inAccent = document.getElementById('input-theme-accent');
+  const txtAccent = document.getElementById('text-theme-accent');
+  const selMode = document.getElementById('select-theme-mode');
+
+  function onThemeColorChanged() {
+    readFromThemeBuilder();
+    renderMobilePreview();
+    syncJsonEditor();
+  }
+
+  if (inPrimary && txtPrimary) {
+    inPrimary.addEventListener('input', (e) => {
+      txtPrimary.value = e.target.value;
+      onThemeColorChanged();
+    });
+    txtPrimary.addEventListener('input', (e) => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+        inPrimary.value = e.target.value;
+        onThemeColorChanged();
+      }
+    });
+  }
+
+  if (inAccent && txtAccent) {
+    inAccent.addEventListener('input', (e) => {
+      txtAccent.value = e.target.value;
+      onThemeColorChanged();
+    });
+    txtAccent.addEventListener('input', (e) => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+        inAccent.value = e.target.value;
+        onThemeColorChanged();
+      }
+    });
+  }
+
+  if (selMode) {
+    selMode.addEventListener('change', onThemeColorChanged);
+  }
+
+  document.querySelectorAll('.palette-btn').forEach(pBtn => {
+    pBtn.addEventListener('click', () => {
+      const primary = pBtn.dataset.primary;
+      const accent = pBtn.dataset.accent;
+      const mode = pBtn.dataset.mode;
+      if (inPrimary) inPrimary.value = primary;
+      if (txtPrimary) txtPrimary.value = primary;
+      if (inAccent) inAccent.value = accent;
+      if (txtAccent) txtAccent.value = accent;
+      if (selMode) selMode.value = mode;
+      onThemeColorChanged();
+      showToast('Theme palette applied!');
+    });
+  });
+
+  // 6. Action Buttons
   document.getElementById('btn-publish-feed').addEventListener('click', publishFeedToServer);
   document.getElementById('btn-reset-default').addEventListener('click', resetFeed);
 

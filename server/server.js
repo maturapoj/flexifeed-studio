@@ -16,6 +16,11 @@ const PRESETS = {
   'mega-sale': {
     screen: 'HOME_FEED',
     version: '1.0',
+    theme: {
+      primaryColor: '#4F46E5',
+      accentColor: '#FF3366',
+      mode: 'LIGHT'
+    },
     sections: [
       {
         id: 'sec_carousel_01',
@@ -100,6 +105,11 @@ const PRESETS = {
   'tech-weekend': {
     screen: 'HOME_FEED',
     version: '1.2',
+    theme: {
+      primaryColor: '#0EA5E9',
+      accentColor: '#F97316',
+      mode: 'LIGHT'
+    },
     sections: [
       {
         id: 'sec_carousel_tech',
