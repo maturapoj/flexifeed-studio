@@ -14,7 +14,8 @@ sealed interface SDUIFeedUiState {
     data object Loading : SDUIFeedUiState
     data class Success(
         val screen: SDUIScreen,
-        val campaign: CampaignType
+        val campaign: CampaignType,
+        val isLiveServer: Boolean = false
     ) : SDUIFeedUiState
     data class Error(val message: String) : SDUIFeedUiState
 }
@@ -38,7 +39,11 @@ class HomeViewModel(
         viewModelScope.launch {
             repository.fetchHomeFeed(campaign)
                 .onSuccess { screen ->
-                    _uiState.value = SDUIFeedUiState.Success(screen, campaign)
+                    _uiState.value = SDUIFeedUiState.Success(
+                        screen = screen,
+                        campaign = campaign,
+                        isLiveServer = repository.isLiveServerConnected
+                    )
                 }
                 .onFailure { error ->
                     _uiState.value = SDUIFeedUiState.Error(

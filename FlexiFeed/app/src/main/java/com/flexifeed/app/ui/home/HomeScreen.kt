@@ -227,7 +227,11 @@ fun HomeScreen(
                     ) {
                         // Info badge explaining SDUI
                         item {
-                            SDUIInfoBanner(screenName = state.screen.screen, version = state.screen.version)
+                            SDUIInfoBanner(
+                                screenName = state.screen.screen,
+                                version = state.screen.version,
+                                isLiveServer = state.isLiveServer
+                            )
                         }
 
                         // Render each SDUI Section dynamically
@@ -372,14 +376,18 @@ fun CampaignSwitcherBar(
 }
 
 @Composable
-fun SDUIInfoBanner(screenName: String, version: String) {
+fun SDUIInfoBanner(screenName: String, version: String, isLiveServer: Boolean = false) {
+    val containerBg = if (isLiveServer) Color(0xFF10B981).copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+    val borderColor = if (isLiveServer) Color(0xFF10B981).copy(alpha = 0.35f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+    val textColor = if (isLiveServer) Color(0xFF047857) else MaterialTheme.colorScheme.primary
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
             .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+            .background(containerBg)
+            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -387,14 +395,18 @@ fun SDUIInfoBanner(screenName: String, version: String) {
         Icon(
             imageVector = Icons.Default.Info,
             contentDescription = "Info",
-            tint = MaterialTheme.colorScheme.primary,
+            tint = textColor,
             modifier = Modifier.size(16.dp)
         )
         Text(
-            text = "Rendered via SDUI DSL (Screen: $screenName v$version)",
+            text = if (isLiveServer) {
+                "🟢 Live SDUI Server (10.0.2.2:8080) • $screenName v$version"
+            } else {
+                "🟠 Offline Fallback Preset • $screenName v$version"
+            },
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Medium,
+            color = textColor,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 11.sp
         )
     }

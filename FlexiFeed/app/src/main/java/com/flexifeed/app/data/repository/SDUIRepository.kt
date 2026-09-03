@@ -15,6 +15,9 @@ class SDUIRepository(
     private val gson: Gson = Gson()
 ) {
 
+    val isLiveServerConnected: Boolean
+        get() = service.isLiveServerConnected
+
     suspend fun fetchHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): Result<SDUIScreen> {
         return try {
             val jsonString = service.getHomeFeed(campaign)
