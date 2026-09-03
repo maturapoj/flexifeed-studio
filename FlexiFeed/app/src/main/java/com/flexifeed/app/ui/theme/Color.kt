@@ -29,3 +29,37 @@ val ShimmerBaseLight = Color(0xFFE2E8F0)
 val ShimmerHighlightLight = Color(0xFFF1F5F9)
 val ShimmerBaseDark = Color(0xFF1E293B)
 val ShimmerHighlightDark = Color(0xFF334155)
+
+/**
+ * Safely parse hex string into Compose Color with a fallback color.
+ */
+fun parseHexColor(hexString: String?, defaultColor: Color): Color {
+    if (hexString.isNullOrBlank()) return defaultColor
+    return try {
+        val cleanHex = hexString.trim().removePrefix("#")
+        val colorInt = when (cleanHex.length) {
+            6, 8 -> android.graphics.Color.parseColor("#$cleanHex")
+            else -> return defaultColor
+        }
+        Color(colorInt)
+    } catch (e: Exception) {
+        defaultColor
+    }
+}
+
+/**
+ * Safely parse hex string into nullable Compose Color.
+ */
+fun parseHexColorOrNull(hexString: String?): Color? {
+    if (hexString.isNullOrBlank()) return null
+    return try {
+        val cleanHex = hexString.trim().removePrefix("#")
+        val colorInt = when (cleanHex.length) {
+            6, 8 -> android.graphics.Color.parseColor("#$cleanHex")
+            else -> return null
+        }
+        Color(colorInt)
+    } catch (e: Exception) {
+        null
+    }
+}
