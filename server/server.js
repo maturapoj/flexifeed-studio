@@ -219,6 +219,39 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // API: GET /api/v1/theme
+  if (pathname === '/api/v1/theme' && req.method === 'GET') {
+    const feed = readCurrentFeed();
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(feed.theme || { primaryColor: '#4F46E5', accentColor: '#FF3366', mode: 'LIGHT' }));
+    return;
+  }
+
+  // API: POST /api/v1/theme
+  if (pathname === '/api/v1/theme' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const themeData = JSON.parse(body);
+        const currentFeed = readCurrentFeed();
+        currentFeed.theme = {
+          primaryColor: themeData.primaryColor || currentFeed.theme?.primaryColor || '#4F46E5',
+          accentColor: themeData.accentColor || currentFeed.theme?.accentColor || '#FF3366',
+          mode: themeData.mode || currentFeed.theme?.mode || 'LIGHT'
+        };
+        writeCurrentFeed(currentFeed);
+        console.log(`[SDUI Server] Updated theme: ${JSON.stringify(currentFeed.theme)}`);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, message: 'Theme saved to server!', theme: currentFeed.theme }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON payload: ' + err.message }));
+      }
+    });
+    return;
+  }
+
   // API: POST /api/v1/home-feed
   if (pathname === '/api/v1/home-feed' && req.method === 'POST') {
     let body = '';
