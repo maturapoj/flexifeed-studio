@@ -1,0 +1,136 @@
+{
+  "screen": "HOME_FEED",
+  "version": "2.0-LIVE",
+  "sections": [
+    {
+      "id": "sec_carousel_live",
+      "type": "CAROUSEL",
+      "props": {
+        "autoScrollInterval": 3500
+      },
+      "items": [
+        {
+          "id": "banner_backoffice_live",
+          "imageUrl": "https://picsum.photos/id/180/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/backoffice-live-deal"
+            }
+          }
+        },
+        {
+          "id": "banner_gadget_expo",
+          "imageUrl": "https://picsum.photos/id/201/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/gadget-expo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sec_flash_sale_live",
+      "type": "HORIZONTAL_LIST",
+      "props": {
+        "title": "⚡ 9.9 Midnight Flash Sale (Live Web Backoffice)",
+        "countdownRemainingSec": 10800
+      },
+      "items": [
+        {
+          "id": "prod_live_01",
+          "type": "PRODUCT_CARD_COMPACT",
+          "props": {
+            "name": "หูฟัง Noise Cancelling Pro",
+            "price": "฿1,490",
+            "originalPrice": "฿3,290",
+            "thumbnailUrl": "https://picsum.photos/id/1/200/200"
+          },
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://product/live-01"
+            }
+          }
+        },
+        {
+          "id": "prod_live_02",
+          "type": "PRODUCT_CARD_COMPACT",
+          "props": {
+            "name": "สมาร์ตวอทช์ Ultra AMOLED",
+            "price": "฿2,190",
+            "originalPrice": "฿4,590",
+            "thumbnailUrl": "https://picsum.photos/id/250/200/200"
+          },
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://product/live-02"
+            }
+          }
+        },
+        {
+          "id": "prod_live_03",
+          "type": "PRODUCT_CARD_COMPACT",
+          "props": {
+            "name": "เลนส์กล้อง Mirrorless 50mm",
+            "price": "฿3,890",
+            "originalPrice": "฿6,900",
+            "thumbnailUrl": "https://picsum.photos/id/250/200/200"
+          },
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://product/live-03"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sec_grid_products_live",
+      "type": "GRID_2X2",
+      "props": {
+        "title": "🔥 สินค้าขายดีประจำสัปดาห์ (Hot Weekly Picks)"
+      },
+      "items": [
+        {
+          "id": "prod_g1",
+          "type": "PRODUCT_CARD_FULL",
+          "props": {
+            "name": "คีย์บอร์ด Custom RGB Blue Switch",
+            "price": "฿2,890",
+            "rating": 5,
+            "thumbnailUrl": "https://picsum.photos/id/96/300/300"
+          },
+          "action": {
+            "type": "ADD_TO_CART",
+            "payload": {
+              "productId": "g1",
+              "quantity": 1
+            }
+          }
+        },
+        {
+          "id": "prod_g2",
+          "type": "PRODUCT_CARD_FULL",
+          "props": {
+            "name": "เมาส์ไร้สายบลูทูธ Silent Click",
+            "price": "฿890",
+            "rating": 4.9,
+            "thumbnailUrl": "https://picsum.photos/id/160/300/300"
+          },
+          "action": {
+            "type": "ADD_TO_CART",
+            "payload": {
+              "productId": "g2",
+              "quantity": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
