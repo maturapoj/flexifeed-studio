@@ -8,10 +8,11 @@ lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
 kotlin = "2.2.10"
 composeBom = "2026.02.01"
-
 coil = "2.7.0"
 gson = "2.11.0"
 navigation = "2.8.8"
+retrofit = "2.11.0"
+okhttp = "4.12.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +34,9 @@ androidx-compose-material-icons-extended = { group = "androidx.compose.material"
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
