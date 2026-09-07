@@ -241,6 +241,40 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml'
 };
 
+// Active SSE clients for Live Hot-Reload
+const sseClients = new Set();
+
+function broadcastFeedUpdate(action, presetId) {
+  const eventPayload = {
+    action: action || 'FEED_UPDATED',
+    presetId: presetId || null,
+    timestamp: Date.now()
+  };
+  const message = `event: FEED_UPDATED\ndata: ${JSON.stringify(eventPayload)}\n\n`;
+  console.log(`[SDUI Server] ⚡ SSE Broadcast ${action} (preset: ${presetId}) to ${sseClients.size} client(s)`);
+  for (const client of sseClients) {
+    try {
+      client.write(message);
+    } catch (err) {
+      console.error('[SDUI Server] SSE write error, removing client:', err.message);
+      sseClients.delete(client);
+    }
+  }
+}
+
+// Periodic keepalive ping every 15s to keep connections alive
+setInterval(() => {
+  if (sseClients.size > 0) {
+    for (const client of sseClients) {
+      try {
+        client.write(': keepalive\n\n');
+      } catch (err) {
+        sseClients.delete(client);
+      }
+    }
+  }
+}, 15000);
+
 const server = http.createServer((req, res) => {
   // CORS Headers for API calls
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -255,6 +289,30 @@ const server = http.createServer((req, res) => {
 
   const urlObj = new URL(req.url, `http://${req.headers.host}`);
   const pathname = urlObj.pathname;
+
+  // API: GET /api/v1/feed-stream (Server-Sent Events for Live Hot-Reload)
+  if (pathname === '/api/v1/feed-stream' && req.method === 'GET') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*'
+    });
+    if (typeof res.flushHeaders === 'function') {
+      res.flushHeaders();
+    }
+    res.write(': keepalive\n\n');
+    res.write(`event: CONNECTED\ndata: ${JSON.stringify({ message: 'Live Hot-Reload SSE Connected', timestamp: Date.now() })}\n\n`);
+
+    sseClients.add(res);
+    console.log(`[SDUI Server] 🟢 SSE client connected. Active connections: ${sseClients.size}`);
+
+    req.on('close', () => {
+      sseClients.delete(res);
+      console.log(`[SDUI Server] 🔴 SSE client disconnected. Active connections: ${sseClients.size}`);
+    });
+    return;
+  }
 
   // API: GET /api/v1/home-feed (supports optional ?campaign=tech-weekend or ?campaign=mega-sale)
   if (pathname === '/api/v1/home-feed' && req.method === 'GET') {
@@ -313,6 +371,7 @@ const server = http.createServer((req, res) => {
         savePreset(activePreset, presetData);
 
         console.log(`[SDUI Server] Updated theme for preset '${activePreset}': ${JSON.stringify(currentFeed.theme)}`);
+        broadcastFeedUpdate('THEME_UPDATED', activePreset);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           success: true,
@@ -346,6 +405,7 @@ const server = http.createServer((req, res) => {
         savePreset(activePreset, parsed);
 
         console.log(`[SDUI Server] Updated feed configuration for preset '${activePreset}' (${parsed.sections.length} sections)`);
+        broadcastFeedUpdate('FEED_UPDATED', activePreset);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, message: 'Configuration saved and published!', presetId: activePreset }));
       } catch (err) {
@@ -363,6 +423,7 @@ const server = http.createServer((req, res) => {
     savePreset('mega-sale', PRESETS['mega-sale']);
     savePreset('tech-weekend', PRESETS['tech-weekend']);
     writeCurrentFeed(defaultData);
+    broadcastFeedUpdate('FEED_RESET', 'mega-sale');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: true, message: 'Reset all presets to default configuration' }));
     return;
@@ -376,6 +437,7 @@ const server = http.createServer((req, res) => {
       presetData.presetId = presetId;
       writeCurrentFeed(presetData);
       console.log(`[SDUI Server] Switched to preset '${presetId}' with theme: ${JSON.stringify(presetData.theme)}`);
+      broadcastFeedUpdate('PRESET_SWITCHED', presetId);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         success: true,

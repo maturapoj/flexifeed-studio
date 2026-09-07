@@ -31,21 +31,37 @@ fun SDUIInfoBanner(
     screenName: String,
     version: String,
     isLiveServer: Boolean = false,
+    isLiveConnected: Boolean = false,
+    isHotReloading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val containerBg = if (isLiveServer) {
-        Color(0xFF10B981).copy(alpha = 0.1f)
-    } else {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+    val containerBg = when {
+        isHotReloading -> Color(0xFF8B5CF6).copy(alpha = 0.15f)
+        isLiveConnected -> Color(0xFF10B981).copy(alpha = 0.12f)
+        isLiveServer -> Color(0xFF10B981).copy(alpha = 0.08f)
+        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
     }
 
-    val borderColor = if (isLiveServer) {
-        Color(0xFF10B981).copy(alpha = 0.35f)
-    } else {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+    val borderColor = when {
+        isHotReloading -> Color(0xFF8B5CF6).copy(alpha = 0.5f)
+        isLiveConnected -> Color(0xFF10B981).copy(alpha = 0.45f)
+        isLiveServer -> Color(0xFF10B981).copy(alpha = 0.35f)
+        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
     }
 
-    val textColor = if (isLiveServer) Color(0xFF047857) else MaterialTheme.colorScheme.primary
+    val textColor = when {
+        isHotReloading -> Color(0xFF7C3AED)
+        isLiveConnected -> Color(0xFF047857)
+        isLiveServer -> Color(0xFF047857)
+        else -> MaterialTheme.colorScheme.primary
+    }
+
+    val bannerText = when {
+        isHotReloading -> "⚡ [${BuildConfig.ENVIRONMENT}] Live Hot-Reloading... • $screenName v$version"
+        isLiveConnected -> "🟢 [${BuildConfig.ENVIRONMENT}] Live Stream Connected • $screenName v$version"
+        isLiveServer -> "🟢 [${BuildConfig.ENVIRONMENT}] Live SDUI Server • $screenName v$version"
+        else -> "🟠 [${BuildConfig.ENVIRONMENT}] Offline Fallback • $screenName v$version"
+    }
 
     Row(
         modifier = modifier
@@ -60,16 +76,12 @@ fun SDUIInfoBanner(
     ) {
         Icon(
             imageVector = Icons.Default.Info,
-            contentDescription = "Info",
+            contentDescription = "Status",
             tint = textColor,
             modifier = Modifier.size(16.dp)
         )
         Text(
-            text = if (isLiveServer) {
-                "🟢 [${BuildConfig.ENVIRONMENT}] Live SDUI Server • $screenName v$version"
-            } else {
-                "🟠 [${BuildConfig.ENVIRONMENT}] Offline Fallback • $screenName v$version"
-            },
+            text = bannerText,
             style = MaterialTheme.typography.bodySmall,
             color = textColor,
             fontWeight = FontWeight.SemiBold,

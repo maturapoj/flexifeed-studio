@@ -165,6 +165,8 @@ fun HomeScreenContent(
                 onRefresh = { onEvent(HomeEvent.Refresh(isPullToRefresh = true)) },
                 onAction = onAction,
                 onClearSearch = { onEvent(HomeEvent.ClearSearch) },
+                isLiveConnected = uiState.isLiveConnected,
+                isHotReloading = uiState.isHotReloading,
                 modifier = Modifier.weight(1f)
             )
         }

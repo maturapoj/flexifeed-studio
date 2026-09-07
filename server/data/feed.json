@@ -2,8 +2,8 @@
   "screen": "HOME_FEED",
   "version": "1.0",
   "theme": {
-    "primaryColor": "#ececf9",
-    "accentColor": "#ff9500",
+    "primaryColor": "#10B981",
+    "accentColor": "#F59E0B",
     "mode": "DARK"
   },
   "sections": [

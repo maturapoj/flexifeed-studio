@@ -39,7 +39,9 @@ fun HomeFeedContent(
     onRefresh: () -> Unit,
     onAction: (SDUIAction) -> Unit,
     onClearSearch: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLiveConnected: Boolean = false,
+    isHotReloading: Boolean = false
 ) {
     when (feedState) {
         is SDUIFeedUiState.Loading -> {
@@ -113,7 +115,9 @@ fun HomeFeedContent(
                             SDUIInfoBanner(
                                 screenName = feedState.screen.screen,
                                 version = feedState.screen.version,
-                                isLiveServer = feedState.isLiveServer
+                                isLiveServer = feedState.isLiveServer,
+                                isLiveConnected = isLiveConnected,
+                                isHotReloading = isHotReloading
                             )
                         }
 
