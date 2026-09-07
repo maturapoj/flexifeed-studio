@@ -1,11 +1,11 @@
 package com.flexifeed.app.ui.home
 
 import androidx.lifecycle.ViewModel
-import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.data.remote.SDUIStreamEvent
 import com.flexifeed.app.data.remote.SDUIStreamService
 import com.flexifeed.app.data.repository.SDUIRepository
 import com.flexifeed.app.domain.action.SDUIAction
+import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.state.HomeEffect
 import com.flexifeed.app.ui.state.HomeEvent

@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.flexifeed.app.data.remote.CampaignType
+import com.flexifeed.app.domain.model.CampaignType
 
 /**
  * Filter chip bar for switching between different SDUI campaign payloads.
