@@ -1,6 +1,7 @@
 package com.flexifeed.app.data.remote
 
 import com.flexifeed.app.data.model.SDUIResponseDTO
+import com.flexifeed.app.domain.model.CampaignType
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 

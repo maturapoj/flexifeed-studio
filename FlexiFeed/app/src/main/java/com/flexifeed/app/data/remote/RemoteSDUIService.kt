@@ -2,6 +2,7 @@ package com.flexifeed.app.data.remote
 
 import com.flexifeed.app.BuildConfig
 import com.flexifeed.app.data.model.SDUIResponseDTO
+import com.flexifeed.app.domain.model.CampaignType
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
