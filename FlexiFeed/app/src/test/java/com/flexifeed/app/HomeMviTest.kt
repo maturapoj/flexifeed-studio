@@ -1,5 +1,6 @@
 package com.flexifeed.app
 
+import com.flexifeed.app.data.remote.MockSDUIService
 import com.flexifeed.app.data.repository.SDUIRepositoryImpl
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.CampaignType
@@ -145,9 +146,9 @@ class HomeMviTest {
 
     @Test
     fun `LiveHotReloadReceived event triggers silent reload and updates campaign`() = runBlocking {
-        val mockRepo = com.flexifeed.app.data.repository.SDUIRepository(
-            remoteService = com.flexifeed.app.data.remote.MockSDUIService(),
-            mockService = com.flexifeed.app.data.remote.MockSDUIService()
+        val mockRepo = SDUIRepositoryImpl(
+            remoteService = MockSDUIService(),
+            mockService = MockSDUIService()
         )
         val testVm = HomeViewModel(
             repository = mockRepo,

@@ -1,7 +1,7 @@
 package com.flexifeed.app
 
 import com.flexifeed.app.data.remote.MockSDUIService
-import com.flexifeed.app.data.repository.SDUIRepository
+import com.flexifeed.app.data.repository.SDUIRepositoryImpl
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUIConstants
 import org.junit.Assert.assertEquals
@@ -12,11 +12,11 @@ import org.junit.Test
 
 class SDUIRepositoryTest {
 
-    private lateinit var repository: SDUIRepository
+    private lateinit var repository: SDUIRepositoryImpl
 
     @Before
     fun setup() {
-        repository = SDUIRepository()
+        repository = SDUIRepositoryImpl()
     }
 
     @Test
@@ -173,7 +173,7 @@ class SDUIRepositoryTest {
                 )
             }
         }
-        val customRepo = SDUIRepository(remoteService = fakeRemote)
+        val customRepo = SDUIRepositoryImpl(remoteService = fakeRemote)
         val result = customRepo.fetchHomeFeed()
 
         assertTrue(result.isSuccess)
@@ -191,7 +191,7 @@ class SDUIRepositoryTest {
                 throw java.io.IOException("Remote network down")
             }
         }
-        val fallbackRepo = SDUIRepository(remoteService = failingRemote)
+        val fallbackRepo = SDUIRepositoryImpl(remoteService = failingRemote)
         val result = fallbackRepo.fetchHomeFeed()
 
         assertTrue(result.isSuccess)
