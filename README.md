@@ -13,11 +13,20 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
 
 ---
 
-## 📱 Live Demo (Interactive Showcase)
+## 📱 Interactive Showcase (Full-Stack SDUI Platform)
 
+### 💻 1. Web Studio Backoffice (Live DSL Control & Theming)
 <div align="center">
-  <img src="docs/media/demo.gif" alt="FlexiFeed Studio SDUI Live Demo" width="360" style="border-radius: 16px; box-shadow: 0 10px 35px rgba(0,0,0,0.15);" />
-  <p><em>Real-Time SSE Live Stream Hot-Reload, Multi-Screen SDUI Navigation, Cart Mutations, and Seamless State Restoration</em></p>
+  <img src="docs/media/backoffice-demo.gif" alt="FlexiFeed Web Studio Backoffice Demo" width="720" style="border-radius: 12px; box-shadow: 0 10px 35px rgba(0,0,0,0.15);" />
+  <p><em>Web Studio GUI: Preset Switching (Mega Sale ⟷ Tech Weekend), Dynamic Logo & App Theming, Raw JSON DSL Editing, and Instant Broadcast over Server-Sent Events</em></p>
+</div>
+
+<br />
+
+### 📱 2. Android Compose Client (Seamless Real-Time Experience)
+<div align="center">
+  <img src="docs/media/demo.gif" alt="FlexiFeed Mobile App Live Demo" width="340" style="border-radius: 16px; box-shadow: 0 10px 35px rgba(0,0,0,0.15);" />
+  <p><em>Android App: Instant Hot-Reloading from SSE stream, Multi-Screen SDUI Navigation (Clean Native Transitions), Interactive Cart State, and State Caching</em></p>
 </div>
 
 ---
