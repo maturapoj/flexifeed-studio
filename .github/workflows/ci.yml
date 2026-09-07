@@ -77,6 +77,11 @@ jobs:
           cd server
           npm install
 
+      - name: TypeScript Build & Type Check
+        run: |
+          cd server
+          npm run build
+
       - name: Validate SDUI JSON DSL & Presets
         run: |
           node -e "

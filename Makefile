@@ -11,7 +11,7 @@ GREEN  := \033[32m
 YELLOW := \033[33m
 RESET  := \033[0m
 
-.PHONY: help test build install launch server server-install clean all
+.PHONY: help test build install launch server server-install server-build clean all
 
 ##@ Documentation
 help: ## Display this help message with available commands
@@ -44,9 +44,13 @@ server-install: ## Install Node.js server dependencies
 	@echo "$(CYAN)Installing server dependencies...$(RESET)"
 	@cd server && npm install
 
-server: ## Start the Node.js SDUI Server and Web Studio (port 8080)
+server-build: ## Build TypeScript SDUI server to dist/
+	@echo "$(CYAN)Building TypeScript server...$(RESET)"
+	@cd server && npm run build
+
+server: ## Start the TypeScript SDUI Server and Web Studio (port 8080)
 	@echo "$(GREEN)Starting FlexiFeed SDUI Server at http://localhost:8080...$(RESET)"
-	@cd server && node server.js
+	@cd server && npm start
 
 ##@ Maintenance & Automation
 clean: ## Clean Gradle and build caches across monorepo
