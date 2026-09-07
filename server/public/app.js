@@ -211,6 +211,26 @@ function syncThemeInputs() {
   if (textAccent) textAccent.value = theme.accentColor || "#FF3366";
   if (selectMode) selectMode.value = theme.mode || "LIGHT";
 
+  // Sync separate Logo theme inputs
+  const inputLogoBg = document.getElementById('input-logo-bg');
+  const textLogoBg = document.getElementById('text-logo-bg');
+  const inputLogoIcon = document.getElementById('input-logo-icon');
+  const textLogoIcon = document.getElementById('text-logo-icon');
+  const inputLogoSub = document.getElementById('input-logo-sub');
+  const textLogoSub = document.getElementById('text-logo-sub');
+
+  const logoTheme = theme.logo || {};
+  const logoBg = logoTheme.bgColor || theme.logoBgColor || theme.primaryColor || "#4F46E5";
+  const logoIcon = logoTheme.iconColor || theme.logoIconColor || "#FFFFFF";
+  const logoSub = logoTheme.subtitleColor || theme.logoSubtitleColor || theme.primaryColor || "#4F46E5";
+
+  if (inputLogoBg) inputLogoBg.value = logoBg;
+  if (textLogoBg) textLogoBg.value = logoBg;
+  if (inputLogoIcon) inputLogoIcon.value = logoIcon;
+  if (textLogoIcon) textLogoIcon.value = logoIcon;
+  if (inputLogoSub) inputLogoSub.value = logoSub;
+  if (textLogoSub) textLogoSub.value = logoSub;
+
   applyThemeToPreview(theme);
 }
 
@@ -219,11 +239,19 @@ function readFromThemeBuilder() {
   const inputPrimary = document.getElementById('input-theme-primary');
   const inputAccent = document.getElementById('input-theme-accent');
   const selectMode = document.getElementById('select-theme-mode');
+  const inputLogoBg = document.getElementById('input-logo-bg');
+  const inputLogoIcon = document.getElementById('input-logo-icon');
+  const inputLogoSub = document.getElementById('input-logo-sub');
 
   currentFeed.theme = {
     primaryColor: inputPrimary ? inputPrimary.value : "#4F46E5",
     accentColor: inputAccent ? inputAccent.value : "#FF3366",
-    mode: selectMode ? selectMode.value : "LIGHT"
+    mode: selectMode ? selectMode.value : "LIGHT",
+    logo: {
+      bgColor: inputLogoBg ? inputLogoBg.value : (inputPrimary ? inputPrimary.value : "#4F46E5"),
+      iconColor: inputLogoIcon ? inputLogoIcon.value : "#FFFFFF",
+      subtitleColor: inputLogoSub ? inputLogoSub.value : (inputPrimary ? inputPrimary.value : "#4F46E5")
+    }
   };
   applyThemeToPreview(currentFeed.theme);
 }
@@ -242,11 +270,20 @@ function applyThemeToPreview(theme) {
     phoneScreen.classList.remove('theme-dark');
   }
 
+  // Separate Logo Theme rendering
+  const logoTheme = theme.logo || {};
+  const logoBg = logoTheme.bgColor || theme.logoBgColor || theme.primaryColor || '#4F46E5';
+  const logoIcon = logoTheme.iconColor || theme.logoIconColor || '#FFFFFF';
+  const logoSubColor = logoTheme.subtitleColor || theme.logoSubtitleColor || theme.primaryColor || '#4F46E5';
+
   const logoSub = document.getElementById('mock-logo-sub');
-  if (logoSub) logoSub.style.color = theme.primaryColor;
+  if (logoSub) logoSub.style.color = logoSubColor;
 
   const logoBox = document.getElementById('mock-logo-box');
-  if (logoBox) logoBox.style.background = theme.primaryColor;
+  if (logoBox) {
+    logoBox.style.background = logoBg;
+    logoBox.style.color = logoIcon;
+  }
 
   const cartBadge = document.getElementById('mock-cart-badge');
   if (cartBadge) cartBadge.style.background = theme.accentColor;
@@ -761,13 +798,17 @@ function updatePhoneZoom() {
   const wrapper = document.getElementById('phone-wrapper');
   if (!container || !frame || !wrapper) return;
 
-  if (currentZoom === 'fit') {
-    const availH = container.clientHeight - 24;
-    const availW = container.clientWidth - 24;
-    const scaleH = availH / frame.offsetHeight;
-    const scaleW = availW / frame.offsetWidth;
-    const fitScale = Math.min(1.0, Math.max(0.4, Math.min(scaleH, scaleW)));
-    wrapper.style.transform = `scale(${fitScale})`;
+  const isSmallScreen = window.innerWidth < 1024;
+  const availH = container.clientHeight - 24;
+  const availW = container.clientWidth - 24;
+
+  if (currentZoom === 'fit' || isSmallScreen) {
+    if (availH > 40 && availW > 40) {
+      const scaleH = availH / frame.offsetHeight;
+      const scaleW = availW / frame.offsetWidth;
+      const fitScale = Math.min(1.0, Math.max(0.3, Math.min(scaleH, scaleW)));
+      wrapper.style.transform = `scale(${fitScale})`;
+    }
   } else {
     wrapper.style.transform = `scale(${parseFloat(currentZoom)})`;
   }
@@ -776,6 +817,32 @@ window.addEventListener('resize', updatePhoneZoom);
 
 // Wire Up Everything on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
+  // Mobile / Tablet Workspace View Switcher (Editor vs Live App)
+  const btnShowEditor = document.getElementById('btn-show-editor');
+  const btnShowPreview = document.getElementById('btn-show-preview');
+  const studioWorkspace = document.getElementById('studio-workspace');
+
+  function setMobileWorkspaceView(view) {
+    if (!studioWorkspace) return;
+    if (view === 'preview') {
+      studioWorkspace.classList.remove('view-editor');
+      studioWorkspace.classList.add('view-preview');
+      btnShowEditor?.classList.remove('active');
+      btnShowPreview?.classList.add('active');
+      setTimeout(() => {
+        updatePhoneZoom();
+      }, 50);
+    } else {
+      studioWorkspace.classList.remove('view-preview');
+      studioWorkspace.classList.add('view-editor');
+      btnShowEditor?.classList.add('active');
+      btnShowPreview?.classList.remove('active');
+    }
+  }
+
+  btnShowEditor?.addEventListener('click', () => setMobileWorkspaceView('editor'));
+  btnShowPreview?.addEventListener('click', () => setMobileWorkspaceView('preview'));
+
   // 1. Studio Theme Switcher
   const themeSelect = document.getElementById('select-studio-theme');
   const savedTheme = localStorage.getItem('flexifeed_studio_theme') || 'neon';
@@ -798,19 +865,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return Math.round(window.innerWidth * 0.60);
   }
 
-  if (configPanel) {
-    if (savedWidth) {
-      configPanel.style.width = `${savedWidth}px`;
+  function applyPanelWidth() {
+    if (!configPanel) return;
+    if (window.innerWidth >= 1024) {
+      if (savedWidth) {
+        configPanel.style.width = `${savedWidth}px`;
+      } else {
+        configPanel.style.width = `${get60PercentWidth()}px`;
+      }
     } else {
-      configPanel.style.width = `${get60PercentWidth()}px`;
+      configPanel.style.width = '';
     }
   }
 
+  applyPanelWidth();
+
   // Keep 60/40 responsive on window resize
   window.addEventListener('resize', () => {
-    if (!localStorage.getItem('flexifeed_panel_width_60_40') && configPanel) {
-      configPanel.style.width = `${get60PercentWidth()}px`;
-    }
+    applyPanelWidth();
     updatePhoneZoom();
   });
 
@@ -949,6 +1021,48 @@ document.addEventListener('DOMContentLoaded', () => {
       if (inAccent) inAccent.value = accent;
       if (txtAccent) txtAccent.value = accent;
       if (selMode) selMode.value = mode;
+      onThemeColorChanged();
+      await saveThemeToServer();
+    });
+  });
+
+  // Dedicated Logo Theme Pickers & Presets
+  const inLogoBg = document.getElementById('input-logo-bg');
+  const txtLogoBg = document.getElementById('text-logo-bg');
+  const inLogoIcon = document.getElementById('input-logo-icon');
+  const txtLogoIcon = document.getElementById('text-logo-icon');
+  const inLogoSub = document.getElementById('input-logo-sub');
+  const txtLogoSub = document.getElementById('text-logo-sub');
+
+  function bindColorPair(colorInput, textInput) {
+    if (!colorInput || !textInput) return;
+    colorInput.addEventListener('input', (e) => {
+      textInput.value = e.target.value;
+      onThemeColorChanged();
+    });
+    textInput.addEventListener('input', (e) => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+        colorInput.value = e.target.value;
+        onThemeColorChanged();
+      }
+    });
+  }
+
+  bindColorPair(inLogoBg, txtLogoBg);
+  bindColorPair(inLogoIcon, txtLogoIcon);
+  bindColorPair(inLogoSub, txtLogoSub);
+
+  document.querySelectorAll('.logo-preset-btn').forEach(lBtn => {
+    lBtn.addEventListener('click', async () => {
+      const bg = lBtn.dataset.bg;
+      const icon = lBtn.dataset.icon;
+      const sub = lBtn.dataset.sub;
+      if (inLogoBg) inLogoBg.value = bg;
+      if (txtLogoBg) txtLogoBg.value = bg;
+      if (inLogoIcon) inLogoIcon.value = icon;
+      if (txtLogoIcon) txtLogoIcon.value = icon;
+      if (inLogoSub) inLogoSub.value = sub;
+      if (txtLogoSub) txtLogoSub.value = sub;
       onThemeColorChanged();
       await saveThemeToServer();
     });
