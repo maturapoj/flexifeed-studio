@@ -159,8 +159,8 @@ class SDUIRepositoryTest {
 
     @Test
     fun testFetchHomeFeedRemoteDirectDTO() = kotlinx.coroutines.runBlocking {
-        val fakeRemote = object : com.flexifeed.app.data.remote.SDUIService {
-            override suspend fun getHomeFeed(campaign: com.flexifeed.app.domain.model.CampaignType): com.flexifeed.app.data.model.SDUIResponseDTO {
+        val fakeApi = object : com.flexifeed.app.data.remote.SDUIApi {
+            override suspend fun getHomeFeed(campaign: String?): com.flexifeed.app.data.model.SDUIResponseDTO {
                 return com.flexifeed.app.data.model.SDUIResponseDTO(
                     screen = "DIRECT_DTO_SCREEN",
                     version = "2.0",
@@ -172,8 +172,11 @@ class SDUIRepositoryTest {
                     )
                 )
             }
+            override suspend fun getScreen(screenId: String): com.flexifeed.app.data.model.SDUIResponseDTO {
+                return getHomeFeed(null)
+            }
         }
-        val customRepo = SDUIRepositoryImpl(remoteService = fakeRemote)
+        val customRepo = SDUIRepositoryImpl(api = fakeApi)
         val result = customRepo.fetchHomeFeed()
 
         assertTrue(result.isSuccess)
@@ -186,12 +189,15 @@ class SDUIRepositoryTest {
 
     @Test
     fun testFetchHomeFeedFallbackToMockOnRemoteError() = kotlinx.coroutines.runBlocking {
-        val failingRemote = object : com.flexifeed.app.data.remote.SDUIService {
-            override suspend fun getHomeFeed(campaign: com.flexifeed.app.domain.model.CampaignType): com.flexifeed.app.data.model.SDUIResponseDTO {
+        val failingApi = object : com.flexifeed.app.data.remote.SDUIApi {
+            override suspend fun getHomeFeed(campaign: String?): com.flexifeed.app.data.model.SDUIResponseDTO {
+                throw java.io.IOException("Remote network down")
+            }
+            override suspend fun getScreen(screenId: String): com.flexifeed.app.data.model.SDUIResponseDTO {
                 throw java.io.IOException("Remote network down")
             }
         }
-        val fallbackRepo = SDUIRepositoryImpl(remoteService = failingRemote)
+        val fallbackRepo = SDUIRepositoryImpl(api = failingApi)
         val result = fallbackRepo.fetchHomeFeed()
 
         assertTrue(result.isSuccess)

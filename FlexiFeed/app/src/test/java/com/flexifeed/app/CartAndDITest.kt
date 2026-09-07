@@ -100,8 +100,8 @@ class CartAndDITest {
             repository = SDUIRepositoryImpl(),
             dispatcher = Dispatchers.Unconfined
         )
-        assertFalse(homeViewModel.isRefreshing.value)
+        assertFalse(homeViewModel.uiState.value.isRefreshing)
         homeViewModel.refreshFeed(isPullToRefresh = true)
-        assertNotNull(homeViewModel.isRefreshing)
+        assertTrue(homeViewModel.uiState.value.isRefreshing)
     }
 }

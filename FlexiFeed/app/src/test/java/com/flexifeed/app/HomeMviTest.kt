@@ -147,7 +147,6 @@ class HomeMviTest {
     @Test
     fun `LiveHotReloadReceived event triggers silent reload and updates campaign`() = runBlocking {
         val mockRepo = SDUIRepositoryImpl(
-            remoteService = MockSDUIService(),
             mockService = MockSDUIService()
         )
         val testVm = HomeViewModel(
