@@ -14,12 +14,10 @@ import com.flexifeed.app.ui.state.SDUIFeedUiState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,8 +45,8 @@ class HomeViewModel(
     private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
     val effect: Flow<HomeEffect> = _effect.receiveAsFlow()
 
-    // Backward compatibility accessor for isRefreshing
-    val isRefreshing: StateFlow<Boolean> = StateFlowMapper(_uiState) { it.isRefreshing }
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
         onEvent(HomeEvent.LoadFeed(_uiState.value.currentCampaign))
@@ -105,6 +103,7 @@ class HomeViewModel(
 
     fun refreshFeed(isPullToRefresh: Boolean = false) {
         if (isPullToRefresh) {
+            _isRefreshing.value = true
             _uiState.update { it.copy(isRefreshing = true) }
             scope.launch {
                 val campaign = _uiState.value.currentCampaign
@@ -120,9 +119,11 @@ class HomeViewModel(
                                 isRefreshing = false
                             )
                         }
+                        _isRefreshing.value = false
                     }
                     .onFailure {
                         _uiState.update { it.copy(isRefreshing = false) }
+                        _isRefreshing.value = false
                     }
             }
         } else {
@@ -173,21 +174,5 @@ class HomeViewModel(
     override fun onCleared() {
         super.onCleared()
         scope.cancel()
-    }
-
-    /**
-     * Lightweight adapter to map StateFlow<T> to StateFlow<R> synchronously without coroutine launch.
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private class StateFlowMapper<T, R>(
-        private val source: StateFlow<T>,
-        private val transform: (T) -> R
-    ) : StateFlow<R> {
-        override val value: R get() = transform(source.value)
-        override val replayCache: List<R> get() = listOf(value)
-        override suspend fun collect(collector: FlowCollector<R>): Nothing {
-            source.collect { collector.emit(transform(it)) }
-            kotlinx.coroutines.awaitCancellation()
-        }
     }
 }

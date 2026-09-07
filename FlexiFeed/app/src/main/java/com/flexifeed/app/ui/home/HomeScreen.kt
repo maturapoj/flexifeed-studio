@@ -208,22 +208,6 @@ fun HomeScreenContent(
     }
 }
 
-fun parseHexColor(hexString: String?, defaultColor: Color): Color {
-    if (hexString.isNullOrBlank()) return defaultColor
-    return try {
-        val clean = hexString.removePrefix("#")
-        val colorInt = if (clean.length == 6) {
-            (0xFF000000 or clean.toLong(16)).toInt()
-        } else if (clean.length == 8) {
-            clean.toLong(16).toInt()
-        } else {
-            return defaultColor
-        }
-        Color(colorInt)
-    } catch (e: Exception) {
-        defaultColor
-    }
-}
 
 // ---------------------------------------------------------------------------
 // COMPOSE PREVIEWS (Light & Dark)
