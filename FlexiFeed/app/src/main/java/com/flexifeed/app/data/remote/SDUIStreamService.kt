@@ -1,6 +1,7 @@
 package com.flexifeed.app.data.remote
 
-import androidx.compose.runtime.Immutable
+import com.flexifeed.app.domain.model.SDUIStreamEvent
+import com.flexifeed.app.domain.repository.SDUIStreamService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
@@ -18,33 +19,7 @@ import okhttp3.sse.EventSources
 import org.json.JSONObject
 
 /**
- * Events emitted by the Server-Driven UI Live Stream (SSE).
- */
-@Immutable
-sealed interface SDUIStreamEvent {
-    @Immutable
-    data class Connected(val timestamp: Long = System.currentTimeMillis()) : SDUIStreamEvent
-
-    @Immutable
-    data class Disconnected(val error: String? = null) : SDUIStreamEvent
-
-    @Immutable
-    data class FeedUpdated(
-        val action: String = "FEED_UPDATED",
-        val presetId: String? = null,
-        val timestamp: Long = System.currentTimeMillis()
-    ) : SDUIStreamEvent
-}
-
-/**
- * Service contract for observing live Server-Driven UI updates.
- */
-interface SDUIStreamService {
-    fun observeEvents(): Flow<SDUIStreamEvent>
-}
-
-/**
- * OkHttp SSE implementation of [SDUIStreamService].
+ * OkHttp SSE implementation of domain [SDUIStreamService].
  */
 class RemoteSDUIStreamService(
     private val okHttpClient: OkHttpClient,

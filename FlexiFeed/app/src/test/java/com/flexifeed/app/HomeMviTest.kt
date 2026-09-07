@@ -23,7 +23,10 @@ class HomeMviTest {
 
     @Before
     fun setUp() {
-        viewModel = HomeViewModel(dispatcher = Dispatchers.Unconfined)
+        viewModel = HomeViewModel(
+            repository = com.flexifeed.app.data.repository.SDUIRepositoryImpl(),
+            dispatcher = Dispatchers.Unconfined
+        )
     }
 
     @Test
@@ -158,25 +161,26 @@ class HomeMviTest {
 
     @Test
     fun `HomeViewModel automatically subscribes to SDUIStreamService events`() = runBlocking {
-        val streamFlow = kotlinx.coroutines.flow.MutableSharedFlow<com.flexifeed.app.data.remote.SDUIStreamEvent>()
-        val fakeService = object : com.flexifeed.app.data.remote.SDUIStreamService {
+        val streamFlow = kotlinx.coroutines.flow.MutableSharedFlow<com.flexifeed.app.domain.model.SDUIStreamEvent>()
+        val fakeService = object : com.flexifeed.app.domain.repository.SDUIStreamService {
             override fun observeEvents() = streamFlow
         }
 
         val testViewModel = HomeViewModel(
+            repository = com.flexifeed.app.data.repository.SDUIRepositoryImpl(),
             streamService = fakeService,
             dispatcher = Dispatchers.Unconfined
         )
 
         assertFalse(testViewModel.uiState.value.isLiveConnected)
 
-        streamFlow.emit(com.flexifeed.app.data.remote.SDUIStreamEvent.Connected())
+        streamFlow.emit(com.flexifeed.app.domain.model.SDUIStreamEvent.Connected())
         assertTrue(testViewModel.uiState.value.isLiveConnected)
 
-        streamFlow.emit(com.flexifeed.app.data.remote.SDUIStreamEvent.FeedUpdated(presetId = "tech-weekend"))
+        streamFlow.emit(com.flexifeed.app.domain.model.SDUIStreamEvent.FeedUpdated(presetId = "tech-weekend"))
         assertEquals(CampaignType.TECH_WEEKEND, testViewModel.uiState.value.currentCampaign)
 
-        streamFlow.emit(com.flexifeed.app.data.remote.SDUIStreamEvent.Disconnected())
+        streamFlow.emit(com.flexifeed.app.domain.model.SDUIStreamEvent.Disconnected())
         assertFalse(testViewModel.uiState.value.isLiveConnected)
     }
 

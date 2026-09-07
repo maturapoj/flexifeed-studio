@@ -1,12 +1,12 @@
 package com.flexifeed.app.ui.home
 
 import androidx.lifecycle.ViewModel
-import com.flexifeed.app.data.remote.SDUIStreamEvent
-import com.flexifeed.app.data.remote.SDUIStreamService
-import com.flexifeed.app.data.repository.SDUIRepository
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
+import com.flexifeed.app.domain.model.SDUIStreamEvent
+import com.flexifeed.app.domain.repository.SDUIRepository
+import com.flexifeed.app.domain.repository.SDUIStreamService
 import com.flexifeed.app.ui.state.HomeEffect
 import com.flexifeed.app.ui.state.HomeEvent
 import com.flexifeed.app.ui.state.HomeUiState
@@ -32,9 +32,10 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel for the Home Screen using [uiState] and [HomeEvent] model.
  * Exposes a single [uiState] StateFlow and processes user actions via [onEvent].
+ * Purely depends on Domain layer abstractions ([SDUIRepository], [SDUIStreamService]).
  */
 class HomeViewModel(
-    private val repository: SDUIRepository = SDUIRepository(),
+    private val repository: SDUIRepository,
     private val streamService: SDUIStreamService? = null,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ViewModel() {

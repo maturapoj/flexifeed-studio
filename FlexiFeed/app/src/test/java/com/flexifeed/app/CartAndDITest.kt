@@ -93,7 +93,10 @@ class CartAndDITest {
 
     @Test
     fun `HomeViewModel supports pull to refresh with isRefreshing state flow`() {
-        val homeViewModel = com.flexifeed.app.ui.home.HomeViewModel(dispatcher = kotlinx.coroutines.Dispatchers.Unconfined)
+        val homeViewModel = com.flexifeed.app.ui.home.HomeViewModel(
+            repository = com.flexifeed.app.data.repository.SDUIRepositoryImpl(),
+            dispatcher = kotlinx.coroutines.Dispatchers.Unconfined
+        )
         org.junit.Assert.assertFalse(homeViewModel.isRefreshing.value)
         homeViewModel.refreshFeed(isPullToRefresh = true)
         org.junit.Assert.assertNotNull(homeViewModel.isRefreshing)
