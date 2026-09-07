@@ -156,4 +156,49 @@ class SDUIRepositoryTest {
         assertTrue(screen.sections.isNotEmpty())
         assertEquals(3, screen.sections.size)
     }
+
+    @Test
+    fun testFetchHomeFeedRemoteDirectDTO() = kotlinx.coroutines.runBlocking {
+        val fakeRemote = object : com.flexifeed.app.data.remote.SDUIService {
+            override suspend fun getHomeFeed(campaign: com.flexifeed.app.domain.model.CampaignType): com.flexifeed.app.data.model.SDUIResponseDTO {
+                return com.flexifeed.app.data.model.SDUIResponseDTO(
+                    screen = "DIRECT_DTO_SCREEN",
+                    version = "2.0",
+                    sections = listOf(
+                        com.flexifeed.app.data.model.SDUINodeDTO(
+                            id = "sec_1",
+                            type = "CAROUSEL"
+                        )
+                    )
+                )
+            }
+        }
+        val customRepo = SDUIRepository(remoteService = fakeRemote)
+        val result = customRepo.fetchHomeFeed()
+
+        assertTrue(result.isSuccess)
+        val screen = result.getOrNull()
+        assertNotNull(screen)
+        assertEquals("DIRECT_DTO_SCREEN", screen?.screen)
+        assertEquals("2.0", screen?.version)
+        assertTrue(customRepo.isLiveServerConnected)
+    }
+
+    @Test
+    fun testFetchHomeFeedFallbackToMockOnRemoteError() = kotlinx.coroutines.runBlocking {
+        val failingRemote = object : com.flexifeed.app.data.remote.SDUIService {
+            override suspend fun getHomeFeed(campaign: com.flexifeed.app.domain.model.CampaignType): com.flexifeed.app.data.model.SDUIResponseDTO {
+                throw java.io.IOException("Remote network down")
+            }
+        }
+        val fallbackRepo = SDUIRepository(remoteService = failingRemote)
+        val result = fallbackRepo.fetchHomeFeed()
+
+        assertTrue(result.isSuccess)
+        val screen = result.getOrNull()
+        assertNotNull(screen)
+        assertEquals(SDUIConstants.Screen.HOME_FEED, screen?.screen)
+        org.junit.Assert.assertFalse(fallbackRepo.isLiveServerConnected)
+    }
 }
+
