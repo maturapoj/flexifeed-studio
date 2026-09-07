@@ -22,11 +22,7 @@ class RemoteSDUIService(
     private val api: SDUIApi = apiClient ?: createRetrofitApi(baseUrl, gson)
 
     override suspend fun getHomeFeed(campaign: CampaignType): SDUIResponseDTO {
-        val campaignParam = when (campaign) {
-            CampaignType.TECH_WEEKEND -> "tech-weekend"
-            CampaignType.DEFAULT_FEED -> "mega-sale"
-        }
-        return api.getHomeFeed(campaignParam)
+        return api.getHomeFeed(campaign.id)
     }
 
     // Backward-compatible alias
