@@ -1,9 +1,14 @@
 package com.flexifeed.app.data.remote
 
 import androidx.compose.runtime.Immutable
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -55,7 +60,30 @@ class RemoteSDUIStreamService(
         .retryOnConnectionFailure(true)
         .build()
 
-    override fun observeEvents(): Flow<SDUIStreamEvent> = callbackFlow {
+    override fun observeEvents(): Flow<SDUIStreamEvent> = flow {
+        var retryAttempt = 0
+        while (currentCoroutineContext().isActive) {
+            try {
+                createRawStream().collect { event ->
+                    if (event is SDUIStreamEvent.Connected) {
+                        retryAttempt = 0 // Reset backoff on successful connection
+                    }
+                    emit(event)
+                }
+            } catch (c: CancellationException) {
+                throw c
+            } catch (t: Throwable) {
+                android.util.Log.w("SDUIStream", "SSE stream exception: ${t.message}")
+                emit(SDUIStreamEvent.Disconnected(error = t.localizedMessage))
+            }
+            retryAttempt++
+            val backoffMs = minOf(1500L * (1L shl (retryAttempt - 1).coerceAtMost(3)), 10000L)
+            android.util.Log.d("SDUIStream", "SSE disconnected. Reconnecting in ${backoffMs}ms (attempt $retryAttempt)...")
+            delay(backoffMs)
+        }
+    }
+
+    private fun createRawStream(): Flow<SDUIStreamEvent> = callbackFlow {
         val sseUrl = if (baseUrl.endsWith("/")) "${baseUrl}api/v1/feed-stream" else "$baseUrl/api/v1/feed-stream"
         android.util.Log.d("SDUIStream", "callbackFlow started! Connecting to $sseUrl")
         val request = Request.Builder()
@@ -92,11 +120,13 @@ class RemoteSDUIStreamService(
             override fun onFailure(eventSource: EventSource, t: Throwable?, response: Response?) {
                 android.util.Log.e("SDUIStream", "SSE onFailure: ${t?.message}, HTTP ${response?.code}")
                 trySend(SDUIStreamEvent.Disconnected(error = t?.localizedMessage))
+                close(t)
             }
 
             override fun onClosed(eventSource: EventSource) {
                 android.util.Log.d("SDUIStream", "SSE onClosed")
                 trySend(SDUIStreamEvent.Disconnected())
+                close()
             }
         }
 

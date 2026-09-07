@@ -20,9 +20,12 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -48,8 +51,9 @@ class HomeViewModel(
     private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
     val effect: Flow<HomeEffect> = _effect.receiveAsFlow()
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+    val isRefreshing: StateFlow<Boolean> = _uiState
+        .map { it.isRefreshing }
+        .stateIn(scope, SharingStarted.Eagerly, _uiState.value.isRefreshing)
 
     init {
         onEvent(HomeEvent.LoadFeed(_uiState.value.currentCampaign))
@@ -136,9 +140,9 @@ class HomeViewModel(
 
     fun refreshFeed(isPullToRefresh: Boolean = false) {
         if (isPullToRefresh) {
-            _isRefreshing.value = true
             _uiState.update { it.copy(isRefreshing = true) }
-            scope.launch {
+            fetchFeedJob?.cancel()
+            fetchFeedJob = scope.launch {
                 val campaign = _uiState.value.currentCampaign
                 repository.fetchHomeFeed(campaign)
                     .onSuccess { screen ->
@@ -152,11 +156,9 @@ class HomeViewModel(
                                 isRefreshing = false
                             )
                         }
-                        _isRefreshing.value = false
                     }
                     .onFailure {
                         _uiState.update { it.copy(isRefreshing = false) }
-                        _isRefreshing.value = false
                     }
             }
         } else {
@@ -207,7 +209,8 @@ class HomeViewModel(
             _uiState.value.currentCampaign
         }
         _uiState.update { it.copy(isHotReloading = true, currentCampaign = targetCampaign) }
-        scope.launch {
+        fetchFeedJob?.cancel()
+        fetchFeedJob = scope.launch {
             repository.fetchHomeFeed(targetCampaign)
                 .onSuccess { screen ->
                     _uiState.update {
