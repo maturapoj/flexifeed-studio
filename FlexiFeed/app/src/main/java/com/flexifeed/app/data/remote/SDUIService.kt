@@ -1,9 +1,7 @@
 package com.flexifeed.app.data.remote
 
 import com.flexifeed.app.data.model.SDUIResponseDTO
-
-// Backward compatibility alias for imports from data.remote
-typealias CampaignType = com.flexifeed.app.domain.model.CampaignType
+import com.flexifeed.app.domain.model.CampaignType
 
 /**
  * Clean service contract for fetching Server-Driven UI feeds.

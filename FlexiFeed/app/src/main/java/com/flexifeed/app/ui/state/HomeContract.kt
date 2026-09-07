@@ -45,11 +45,8 @@ sealed interface HomeEvent {
     data class LiveHotReloadReceived(val presetId: String?) : HomeEvent
 }
 
-typealias HomeIntent = HomeEvent
-
 @Immutable
 sealed interface HomeEffect {
     data class ShowSnackbar(val message: String) : HomeEffect
 }
 
-typealias HomeSideEffect = HomeEffect

@@ -9,13 +9,12 @@ import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.state.HomeEffect
 import com.flexifeed.app.ui.state.HomeEvent
-import com.flexifeed.app.ui.state.HomeIntent
-import com.flexifeed.app.ui.state.HomeSideEffect
 import com.flexifeed.app.ui.state.HomeUiState
 import com.flexifeed.app.ui.state.SDUIFeedUiState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -38,6 +37,7 @@ class HomeViewModel(
 ) : ViewModel() {
 
     private val scope = CoroutineScope(dispatcher + SupervisorJob())
+    private var fetchFeedJob: Job? = null
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -106,12 +106,10 @@ class HomeViewModel(
         }
     }
 
-    // Backward compatibility for onIntent
-    fun onIntent(intent: HomeIntent) = onEvent(intent)
-
     fun loadFeed(campaign: CampaignType = _uiState.value.currentCampaign) {
         _uiState.update { it.copy(feedState = SDUIFeedUiState.Loading, currentCampaign = campaign) }
-        scope.launch {
+        fetchFeedJob?.cancel()
+        fetchFeedJob = scope.launch {
             repository.fetchHomeFeed(campaign)
                 .onSuccess { screen ->
                     _uiState.update {
