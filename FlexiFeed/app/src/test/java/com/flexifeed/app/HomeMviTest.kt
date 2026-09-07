@@ -1,12 +1,16 @@
 package com.flexifeed.app
 
+import com.flexifeed.app.data.repository.SDUIRepositoryImpl
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
+import com.flexifeed.app.domain.model.SDUIStreamEvent
+import com.flexifeed.app.domain.repository.SDUIStreamService
 import com.flexifeed.app.ui.home.HomeViewModel
 import com.flexifeed.app.ui.state.HomeEffect
 import com.flexifeed.app.ui.state.HomeEvent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -24,7 +28,7 @@ class HomeMviTest {
     @Before
     fun setUp() {
         viewModel = HomeViewModel(
-            repository = com.flexifeed.app.data.repository.SDUIRepositoryImpl(),
+            repository = SDUIRepositoryImpl(),
             dispatcher = Dispatchers.Unconfined
         )
     }
@@ -161,26 +165,26 @@ class HomeMviTest {
 
     @Test
     fun `HomeViewModel automatically subscribes to SDUIStreamService events`() = runBlocking {
-        val streamFlow = kotlinx.coroutines.flow.MutableSharedFlow<com.flexifeed.app.domain.model.SDUIStreamEvent>()
-        val fakeService = object : com.flexifeed.app.domain.repository.SDUIStreamService {
+        val streamFlow = MutableSharedFlow<SDUIStreamEvent>()
+        val fakeService = object : SDUIStreamService {
             override fun observeEvents() = streamFlow
         }
 
         val testViewModel = HomeViewModel(
-            repository = com.flexifeed.app.data.repository.SDUIRepositoryImpl(),
+            repository = SDUIRepositoryImpl(),
             streamService = fakeService,
             dispatcher = Dispatchers.Unconfined
         )
 
         assertFalse(testViewModel.uiState.value.isLiveConnected)
 
-        streamFlow.emit(com.flexifeed.app.domain.model.SDUIStreamEvent.Connected())
+        streamFlow.emit(SDUIStreamEvent.Connected())
         assertTrue(testViewModel.uiState.value.isLiveConnected)
 
-        streamFlow.emit(com.flexifeed.app.domain.model.SDUIStreamEvent.FeedUpdated(presetId = "tech-weekend"))
+        streamFlow.emit(SDUIStreamEvent.FeedUpdated(presetId = "tech-weekend"))
         assertEquals(CampaignType.TECH_WEEKEND, testViewModel.uiState.value.currentCampaign)
 
-        streamFlow.emit(com.flexifeed.app.domain.model.SDUIStreamEvent.Disconnected())
+        streamFlow.emit(SDUIStreamEvent.Disconnected())
         assertFalse(testViewModel.uiState.value.isLiveConnected)
     }
 

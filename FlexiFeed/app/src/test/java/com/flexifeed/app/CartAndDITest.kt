@@ -1,9 +1,12 @@
 package com.flexifeed.app
 
+import com.flexifeed.app.data.repository.SDUIRepositoryImpl
 import com.flexifeed.app.ui.home.CartViewModel
+import com.flexifeed.app.ui.home.HomeViewModel
 import com.flexifeed.app.ui.state.CartItem
-import com.flexifeed.app.ui.state.SDUIFeedUiState
+import kotlinx.coroutines.Dispatchers
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -93,12 +96,12 @@ class CartAndDITest {
 
     @Test
     fun `HomeViewModel supports pull to refresh with isRefreshing state flow`() {
-        val homeViewModel = com.flexifeed.app.ui.home.HomeViewModel(
-            repository = com.flexifeed.app.data.repository.SDUIRepositoryImpl(),
-            dispatcher = kotlinx.coroutines.Dispatchers.Unconfined
+        val homeViewModel = HomeViewModel(
+            repository = SDUIRepositoryImpl(),
+            dispatcher = Dispatchers.Unconfined
         )
-        org.junit.Assert.assertFalse(homeViewModel.isRefreshing.value)
+        assertFalse(homeViewModel.isRefreshing.value)
         homeViewModel.refreshFeed(isPullToRefresh = true)
-        org.junit.Assert.assertNotNull(homeViewModel.isRefreshing)
+        assertNotNull(homeViewModel.isRefreshing)
     }
 }
