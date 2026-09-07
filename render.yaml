@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: flexifeed-studio
+    runtime: node
+    plan: free
+    region: singapore # or oregon / frankfurt
+    buildCommand: cd server && npm install && npm run build
+    startCommand: cd server && npm run serve
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false # Set your Neon.tech or Render PostgreSQL URL in Render dashboard
