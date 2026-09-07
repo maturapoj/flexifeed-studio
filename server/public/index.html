@@ -71,13 +71,31 @@
     </div>
   </header>
 
+  <!-- Responsive Mobile & Tablet View Switcher (Visible on screens < 1024px) -->
+  <nav class="mobile-workspace-nav" id="mobile-workspace-nav">
+    <button id="btn-show-editor" class="ws-view-tab active">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>
+      <span>Section & DSL Editor</span>
+    </button>
+    <button id="btn-show-preview" class="ws-view-tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+      </svg>
+      <span>Live Mobile Preview</span>
+    </button>
+  </nav>
+
   <!-- Notification Toast -->
   <div id="toast" class="toast hidden">
     <span id="toast-message">Configuration updated!</span>
   </div>
 
   <!-- Studio Workspace -->
-  <main class="studio-workspace">
+  <main class="studio-workspace view-editor" id="studio-workspace">
     
     <!-- Left Column: Configurator Tabs & Editors -->
     <section class="config-panel" id="config-panel">
@@ -211,6 +229,72 @@
                 <span class="palette-preview" style="background: linear-gradient(135deg, #6366F1, #06B6D4)"></span>
                 <span>Cyber Dark</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Logo Theme Configurator (แยกตั้งค่า Logo ชัดเจน) -->
+          <div class="panel-card logo-theme-card" style="margin-top: 24px; border-left: 4px solid var(--primary); background: rgba(0, 0, 0, 0.2);">
+            <div class="card-intro">
+              <h3 style="display: flex; align-items: center; gap: 8px;">
+                <span>🏷️</span> Logo Theme (ตั้งค่าแยกเฉพาะ Logo)
+              </h3>
+              <p>กำหนดสีเฉพาะสำหรับ Brand Logo (กล่องไอคอน, สีไอคอน และข้อความ Subtitle) แยกอิสระจากธีมหลัก</p>
+            </div>
+
+            <div class="theme-controls-grid" style="margin-top: 16px;">
+              <div class="theme-control-item">
+                <label>Logo Box Background</label>
+                <div class="color-picker-row">
+                  <input type="color" id="input-logo-bg" value="#4F46E5" class="color-swatch-picker">
+                  <input type="text" id="text-logo-bg" value="#4F46E5" class="input-text color-hex-input">
+                </div>
+                <span class="control-hint">สีพื้นหลังกล่องไอคอน Logo</span>
+              </div>
+
+              <div class="theme-control-item">
+                <label>Logo Icon Tint</label>
+                <div class="color-picker-row">
+                  <input type="color" id="input-logo-icon" value="#FFFFFF" class="color-swatch-picker">
+                  <input type="text" id="text-logo-icon" value="#FFFFFF" class="input-text color-hex-input">
+                </div>
+                <span class="control-hint">สีของไอคอนรถเข็นใน Logo</span>
+              </div>
+
+              <div class="theme-control-item">
+                <label>Logo Subtitle Color</label>
+                <div class="color-picker-row">
+                  <input type="color" id="input-logo-sub" value="#4F46E5" class="color-swatch-picker">
+                  <input type="text" id="text-logo-sub" value="#4F46E5" class="input-text color-hex-input">
+                </div>
+                <span class="control-hint">สีข้อความ 'Server-Driven UI'</span>
+              </div>
+            </div>
+
+            <!-- Quick Logo Presets -->
+            <div class="quick-palettes" style="margin-top: 16px;">
+              <label class="palette-title">Quick Logo Styles</label>
+              <div class="palette-buttons-grid">
+                <button class="palette-btn logo-preset-btn" data-bg="#4F46E5" data-icon="#FFFFFF" data-sub="#4F46E5">
+                  <span class="palette-preview" style="background: #4F46E5"></span>
+                  <span>Indigo Bold</span>
+                </button>
+                <button class="palette-btn logo-preset-btn" data-bg="#10B981" data-icon="#FFFFFF" data-sub="#10B981">
+                  <span class="palette-preview" style="background: #10B981"></span>
+                  <span>Emerald Fresh</span>
+                </button>
+                <button class="palette-btn logo-preset-btn" data-bg="#F59E0B" data-icon="#000000" data-sub="#F59E0B">
+                  <span class="palette-preview" style="background: #F59E0B"></span>
+                  <span>Gold Luxury</span>
+                </button>
+                <button class="palette-btn logo-preset-btn" data-bg="#FF3366" data-icon="#FFFFFF" data-sub="#FF3366">
+                  <span class="palette-preview" style="background: #FF3366"></span>
+                  <span>Rose Neon</span>
+                </button>
+                <button class="palette-btn logo-preset-btn" data-bg="#1E293B" data-icon="#38BDF8" data-sub="#38BDF8">
+                  <span class="palette-preview" style="background: #1E293B"></span>
+                  <span>Cyber Slate</span>
+                </button>
+              </div>
             </div>
           </div>
 

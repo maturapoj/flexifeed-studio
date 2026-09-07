@@ -1444,3 +1444,369 @@ body {
   border-radius: 2px;
   margin: 6px auto;
 }
+
+/* ==========================================================================
+   7. Responsive Design & Mobile Optimization
+   ========================================================================== */
+
+/* Mobile Workspace View Switcher (< 1024px) */
+.mobile-workspace-nav {
+  display: none;
+  background: var(--bg-panel);
+  border-bottom: 1.5px solid var(--border);
+  padding: 8px 14px;
+  gap: 10px;
+  flex-shrink: 0;
+  z-index: 45;
+}
+
+.ws-view-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  color: var(--text-label);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ws-view-tab:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+}
+
+.ws-view-tab.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 10px var(--primary-glow);
+}
+
+/* 1. Large Laptops / Screens <= 1200px */
+@media (max-width: 1200px) {
+  .studio-header {
+    padding: 0 16px;
+    gap: 12px;
+  }
+  .brand-title {
+    font-size: 18px;
+  }
+  .brand-subtitle {
+    font-size: 12px;
+  }
+  .server-status-pill {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+  .theme-selector-group, .preset-group {
+    padding: 3px 6px;
+  }
+  .ctrl-label, .preset-label {
+    font-size: 12px;
+  }
+  .btn {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+}
+
+/* 2. Tablets & Small Laptops <= 1023px */
+@media (max-width: 1023px) {
+  body {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .mobile-workspace-nav {
+    display: flex;
+  }
+
+  .studio-header {
+    height: auto;
+    min-height: 60px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .studio-workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .panel-resizer {
+    display: none !important;
+  }
+
+  /* When viewing Editor on Tablet/Mobile */
+  .studio-workspace.view-editor .config-panel {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    border-right: none !important;
+    flex: 1 !important;
+    height: 100% !important;
+  }
+
+  .studio-workspace.view-editor .preview-panel {
+    display: none !important;
+  }
+
+  /* When viewing Live Preview on Tablet/Mobile */
+  .studio-workspace.view-preview .config-panel {
+    display: none !important;
+  }
+
+  .studio-workspace.view-preview .preview-panel {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: 1 !important;
+    height: 100% !important;
+  }
+
+  .preview-panel {
+    min-width: 0;
+  }
+
+  .editor-tabs {
+    padding: 0 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .editor-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .tab-content {
+    padding: 20px 18px;
+  }
+}
+
+/* 3. Mobile Devices <= 767px */
+@media (max-width: 767px) {
+  .studio-header {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .header-brand {
+    gap: 10px;
+  }
+
+  .brand-badge {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-badge svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .brand-title {
+    font-size: 16px;
+  }
+
+  .brand-subtitle {
+    display: none; /* Keep header compact on mobile */
+  }
+
+  .server-status-pill {
+    padding: 4px 8px;
+    font-size: 11.5px;
+  }
+
+  .header-actions {
+    gap: 6px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .header-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .btn {
+    padding: 6px 10px;
+    font-size: 12.5px;
+    border-radius: 6px;
+  }
+
+  .mobile-workspace-nav {
+    padding: 6px 10px;
+  }
+
+  .ws-view-tab {
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+
+  .tab-content {
+    padding: 14px 12px;
+  }
+
+  .panel-card {
+    padding: 14px 12px;
+    margin-bottom: 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .input-text {
+    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 42px;
+  }
+
+  .add-section-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .add-section-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .add-section-actions .select-dropdown,
+  .add-section-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Section cards inside visual builder */
+  .section-card {
+    margin-bottom: 14px;
+  }
+
+  .section-card-header {
+    padding: 10px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .section-card-title {
+    gap: 8px;
+  }
+
+  .section-type-badge {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .section-id-tag {
+    font-size: 12px;
+  }
+
+  /* Theme Editor on Mobile */
+  .theme-controls-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .palette-buttons-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+  }
+
+  .theme-action-bar {
+    flex-direction: column;
+    align-items: stretch !important;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .theme-action-bar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* JSON Editor Toolbar */
+  .json-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Live Preview on Mobile */
+  .preview-header {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .preview-toolbar {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .phone-viewport-container {
+    padding: 8px;
+  }
+}
+
+/* 4. Small Phones <= 420px */
+@media (max-width: 420px) {
+  .brand-title {
+    font-size: 15px;
+  }
+
+  .select-theme {
+    max-width: 120px;
+  }
+
+  .btn-preset {
+    padding: 4px 6px;
+    font-size: 11.5px;
+  }
+
+  .tab-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .tab-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+

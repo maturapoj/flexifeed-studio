@@ -2,50 +2,11 @@
   "screen": "HOME_FEED",
   "version": "1.0",
   "theme": {
-    "primaryColor": "#10B981",
-    "accentColor": "#F59E0B",
-    "mode": "DARK"
+    "primaryColor": "#000000",
+    "accentColor": "#000000",
+    "mode": "LIGHT"
   },
   "sections": [
-    {
-      "id": "sec_carousel_01",
-      "type": "CAROUSEL",
-      "props": {
-        "autoScrollInterval": 4000
-      },
-      "items": [
-        {
-          "id": "banner_mega_sale",
-          "imageUrl": "https://picsum.photos/id/1060/800/400",
-          "action": {
-            "type": "NAVIGATE",
-            "payload": {
-              "target": "flexifeed://campaign/mega-sale"
-            }
-          }
-        },
-        {
-          "id": "banner_gadget_expo",
-          "imageUrl": "https://picsum.photos/id/201/800/400",
-          "action": {
-            "type": "NAVIGATE",
-            "payload": {
-              "target": "flexifeed://campaign/gadget-expo"
-            }
-          }
-        },
-        {
-          "id": "banner_super_brand_day",
-          "imageUrl": "https://picsum.photos/id/180/800/400",
-          "action": {
-            "type": "NAVIGATE",
-            "payload": {
-              "target": "flexifeed://campaign/super-brand-day"
-            }
-          }
-        }
-      ]
-    },
     {
       "id": "sec_flash_sale_02",
       "type": "HORIZONTAL_LIST",
@@ -121,10 +82,9 @@
             "thumbnailUrl": "https://picsum.photos/id/96/300/300"
           },
           "action": {
-            "type": "ADD_TO_CART",
+            "type": "NAVIGATE",
             "payload": {
-              "productId": "201",
-              "quantity": 1
+              "target": "flexifeed://product/201"
             }
           }
         },
@@ -178,6 +138,48 @@
               "quantity": 1
             }
           }
+        }
+      ]
+    },
+    {
+      "id": "sec_carousel_01",
+      "type": "CAROUSEL",
+      "props": {
+        "autoScrollInterval": 4000
+      },
+      "items": [
+        {
+          "id": "banner_mega_sale",
+          "imageUrl": "https://picsum.photos/id/1060/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/mega-sale"
+            }
+          },
+          "props": {}
+        },
+        {
+          "id": "banner_gadget_expo",
+          "imageUrl": "https://picsum.photos/id/201/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/gadget-expo"
+            }
+          },
+          "props": {}
+        },
+        {
+          "id": "banner_super_brand_day",
+          "imageUrl": "https://picsum.photos/id/180/800/400",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/super-brand-day"
+            }
+          },
+          "props": {}
         }
       ]
     }
