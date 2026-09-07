@@ -2,10 +2,14 @@
   "name": "flexifeed-studio-server",
   "version": "1.0.0",
   "description": "Lightweight Server-Driven UI API & Responsive Studio Backoffice",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "node -e \"const fs = require('fs'); JSON.parse(fs.readFileSync('data/feed.json')); console.log('✔ feed.json is valid!');\""
+    "build": "tsc",
+    "start": "tsx src/server.ts",
+    "serve": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && node -e \"const fs = require('fs'); JSON.parse(fs.readFileSync('data/feed.json')); console.log('✔ feed.json is valid!');\""
   },
   "keywords": [
     "sdui",
@@ -14,5 +18,10 @@
     "compose"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
 }
