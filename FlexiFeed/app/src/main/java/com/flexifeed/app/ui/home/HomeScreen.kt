@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,13 +25,12 @@ import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen
-import com.flexifeed.app.ui.home.components.AnalyticsInspectorSheet
 import com.flexifeed.app.ui.home.components.CampaignSwitcherBar
 import com.flexifeed.app.ui.home.components.HomeFeedContent
 import com.flexifeed.app.ui.home.components.HomeSearchBar
 import com.flexifeed.app.ui.home.components.HomeTopAppBar
-import com.flexifeed.app.ui.home.components.NavigationPreviewSheet
 import com.flexifeed.app.ui.sdui.ActionDispatcher
+import com.flexifeed.app.ui.sdui.SDUICommonSheets
 import com.flexifeed.app.ui.state.CartItem
 import com.flexifeed.app.ui.state.CheckoutResult
 import com.flexifeed.app.ui.state.HomeEffect
@@ -77,6 +74,13 @@ fun HomeScreen(
         }
     }
 
+    // Restore home feed if resuming after generic screen navigation
+    LaunchedEffect(uiState.currentScreenId) {
+        if (uiState.currentScreenId != "home") {
+            viewModel.restoreHomeFeed()
+        }
+    }
+
     // Pass hoisted state to the pure stateless content container
     val hoistedState = uiState.copy(
         cartCount = cartCount,
@@ -96,7 +100,6 @@ fun HomeScreen(
         onCartCheckout = cartViewModel::checkout,
         onAnalyticsClear = analyticsTracker::clearEvents,
         onAction = { action ->
-            viewModel.onEvent(HomeEvent.HandleSDUIAction(action))
             actionDispatcher.handleAction(action)
         },
         snackbarHostState = snackbarHostState,
@@ -134,7 +137,8 @@ fun HomeScreenContent(
                 analyticsCount = uiState.analyticsEventsCount,
                 onOpenAnalytics = { onEvent(HomeEvent.SetAnalyticsSheetVisible(true)) },
                 onOpenCart = { onEvent(HomeEvent.SetCartSheetVisible(true)) },
-                onRefresh = { onEvent(HomeEvent.Refresh(isPullToRefresh = true)) }
+                onRefresh = { onEvent(HomeEvent.Refresh(isPullToRefresh = true)) },
+                logoTheme = uiState.sduiTheme?.logoTheme
             )
         }
     ) { innerPadding ->
@@ -172,42 +176,25 @@ fun HomeScreenContent(
         }
     }
 
-    // Modal Bottom Sheet: Rich Interactive Cart & Checkout
-    if (uiState.isCartSheetVisible) {
-        ModalBottomSheet(
-            onDismissRequest = { onEvent(HomeEvent.SetCartSheetVisible(false)) },
-            sheetState = rememberModalBottomSheetState()
-        ) {
-            CartBottomSheetContent(
-                cartItems = richCartItems,
-                totalCount = uiState.cartCount,
-                totalPriceFormatted = cartTotalPriceFormatted,
-                onIncrement = onCartIncrement,
-                onDecrement = onCartDecrement,
-                onRemove = onCartRemove,
-                onClearCart = onCartClear,
-                onCheckout = onCartCheckout,
-                onClose = { onEvent(HomeEvent.SetCartSheetVisible(false)) }
-            )
-        }
-    }
-
-    // Modal Bottom Sheet: Analytics Tracker
-    if (uiState.isAnalyticsSheetVisible) {
-        AnalyticsInspectorSheet(
-            events = analyticsEvents,
-            onClear = onAnalyticsClear,
-            onDismiss = { onEvent(HomeEvent.SetAnalyticsSheetVisible(false)) }
-        )
-    }
-
-    // Modal Bottom Sheet: Deep Link Navigation Preview
-    uiState.targetNavigationUrl?.let { url ->
-        NavigationPreviewSheet(
-            targetUrl = url,
-            onDismiss = { onEvent(HomeEvent.SetNavigationTargetUrl(null)) }
-        )
-    }
+    // Shared Modal Bottom Sheets: Cart, Analytics Tracker & Navigation Preview
+    SDUICommonSheets(
+        isCartVisible = uiState.isCartSheetVisible,
+        cartItems = richCartItems,
+        cartTotalCount = uiState.cartCount,
+        cartTotalPriceFormatted = cartTotalPriceFormatted,
+        onCartIncrement = onCartIncrement,
+        onCartDecrement = onCartDecrement,
+        onCartRemove = onCartRemove,
+        onCartClear = onCartClear,
+        onCartCheckout = onCartCheckout,
+        onDismissCart = { onEvent(HomeEvent.SetCartSheetVisible(false)) },
+        isAnalyticsVisible = uiState.isAnalyticsSheetVisible,
+        analyticsEvents = analyticsEvents,
+        onAnalyticsClear = onAnalyticsClear,
+        onDismissAnalytics = { onEvent(HomeEvent.SetAnalyticsSheetVisible(false)) },
+        targetNavigationUrl = uiState.targetNavigationUrl,
+        onDismissNavigationPreview = { onEvent(HomeEvent.SetNavigationTargetUrl(null)) }
+    )
 }
 
 
