@@ -11,7 +11,7 @@ GREEN  := \033[32m
 YELLOW := \033[33m
 RESET  := \033[0m
 
-.PHONY: help test build install launch server server-install server-build clean all
+.PHONY: help test build install launch server server-install server-build db-up db-down db-push db-seed db-studio clean all
 
 ##@ Documentation
 help: ## Display this help message with available commands
@@ -51,6 +51,27 @@ server-build: ## Build TypeScript SDUI server to dist/
 server: ## Start the TypeScript SDUI Server and Web Studio (port 8080)
 	@echo "$(GREEN)Starting FlexiFeed SDUI Server at http://localhost:8080...$(RESET)"
 	@cd server && npm start
+
+##@ Database (PostgreSQL & Drizzle)
+db-up: ## Start local PostgreSQL container via Docker Compose
+	@echo "$(CYAN)Starting local PostgreSQL container...$(RESET)"
+	@docker compose up -d
+
+db-down: ## Stop local PostgreSQL container
+	@echo "$(YELLOW)Stopping local PostgreSQL container...$(RESET)"
+	@docker compose down
+
+db-push: ## Push Drizzle schema to PostgreSQL (auto-migrates tables)
+	@echo "$(CYAN)Pushing schema to database via Drizzle Kit...$(RESET)"
+	@cd server && npm run db:push
+
+db-seed: ## Seed SDUI presets, screens, and settings into PostgreSQL
+	@echo "$(CYAN)Seeding SDUI data into database...$(RESET)"
+	@cd server && npm run db:seed
+
+db-studio: ## Open Drizzle Studio visual database inspector in browser
+	@echo "$(GREEN)Launching Drizzle Studio...$(RESET)"
+	@cd server && npm run db:studio
 
 ##@ Maintenance & Automation
 clean: ## Clean Gradle and build caches across monorepo

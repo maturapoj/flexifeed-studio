@@ -3,6 +3,8 @@
 [![CI](https://github.com/maturapoj/flexifeed-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/maturapoj/flexifeed-studio/actions/workflows/ci.yml)
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2016-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Drizzle ORM](https://img.shields.io/badge/ORM-Drizzle%20ORM-C5F74F?logo=drizzle&logoColor=black)](https://orm.drizzle.team)
 [![Android Min SDK](https://img.shields.io/badge/Min%20SDK-26-34A853?logo=android&logoColor=white)](https://developer.android.com)
 [![Target SDK](https://img.shields.io/badge/Target%20SDK-34-4285F4?logo=android&logoColor=white)](https://developer.android.com)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20BOM-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
@@ -322,6 +324,64 @@ Guidelines and constraints for AI agents and developers working in this reposito
 4. **Type-Safe SDUI Contracts**: Use `SDUIConstants`—never use magic strings.
 
 ---
+
+---
+
+## 🗄️ Database Architecture (PostgreSQL + Drizzle ORM)
+
+FlexiFeed Studio features a hybrid **Relational + Document (JSONB)** data layer powered by [Drizzle ORM](https://orm.drizzle.team) and PostgreSQL.
+
+```
+   ┌────────────────────────────────────────────────────────┐
+   │             PostgreSQL Table: "screens"                │
+   ├───────────┬──────────────┬──────────┬──────────────────┤
+   │ id (UUID) │ name (Text)  │ version  │ sections (JSONB) │
+   ├───────────┼──────────────┼──────────┼──────────────────┤
+   │ 101       │ "HOME_FEED"  │ "1.0"    │ [ { id: "sec_1", │
+   │           │              │          │     type: "..." }│
+   └───────────┴──────────────┴──────────┴──────────────────┘
+```
+
+- **Resilient Hybrid Store:** If `DATABASE_URL` is configured and online, reads and writes are persisted to PostgreSQL. If offline or omitted, it gracefully falls back to the local file store (`data/feed.json`) with zero downtime.
+- **Drizzle Kit Tooling:** Manage database schemas without writing manual SQL migrations.
+
+### Local Database Setup (Docker Compose)
+```bash
+# 1. Start local PostgreSQL 16 container
+make db-up
+
+# 2. Push Drizzle schema to database (auto-creates tables)
+make db-push
+
+# 3. Seed presets, screens, and settings
+make db-seed
+
+# 4. (Optional) Open Drizzle Studio visual GUI in browser
+make db-studio
+```
+
+---
+
+## ☁️ Cloud Deployment (Free Tier: Neon.tech + Render.com)
+
+### 1. Database on Neon.tech (Free Serverless PostgreSQL)
+1. Create a free account at [neon.tech](https://neon.tech) and create a project (e.g. `flexifeed`).
+2. Copy the connection string provided in the Neon dashboard:
+   ```bash
+   DATABASE_URL="postgresql://<user>:<password>@<neon-hostname>.neon.tech/flexifeed?sslmode=require"
+   ```
+3. Add this string to your `server/.env` file.
+4. Run `npm run db:push && npm run db:seed` to initialize the database in the cloud!
+
+### 2. Server on Render.com (Free Web Service with SSE)
+The repository includes a [render.yaml](render.yaml) blueprint for 1-click deployment:
+1. Push your repository to GitHub.
+2. Log into [render.com](https://render.com) and click **New > Blueprint**.
+3. Select this repository. Render will automatically configure:
+   - **Build Command:** `cd server && npm install && npm run build`
+   - **Start Command:** `cd server && npm run serve`
+4. Set the `DATABASE_URL` environment variable to your Neon.tech connection string in the Render service settings.
+5. Your SDUI Server & Web Studio will be live on `https://<your-app>.onrender.com`!
 
 ## 📄 License
 

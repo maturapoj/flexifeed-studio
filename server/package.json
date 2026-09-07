@@ -9,7 +9,10 @@
     "serve": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit && node -e \"const fs = require('fs'); JSON.parse(fs.readFileSync('data/feed.json')); console.log('✔ feed.json is valid!');\""
+    "test": "tsc --noEmit && node -e \"const fs = require('fs'); JSON.parse(fs.readFileSync('data/feed.json')); console.log('\u2714 feed.json is valid!');\"",
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx src/db/seed.ts",
+    "db:studio": "drizzle-kit studio"
   },
   "keywords": [
     "sdui",
@@ -21,7 +24,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^26.5.0",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.23.0"
   }
 }
