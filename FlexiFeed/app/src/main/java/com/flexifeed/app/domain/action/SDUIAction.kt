@@ -31,4 +31,10 @@ data class SDUIAction(
     }
 
     fun getEventName(): String? = (payload[SDUIConstants.ActionKey.EVENT] ?: payload[SDUIConstants.ActionKey.EVENT_NAME]) as? String
+
+    fun getName(): String? = payload[SDUIConstants.PropKey.NAME] as? String
+
+    fun getPrice(): String? = payload[SDUIConstants.PropKey.PRICE] as? String
+
+    fun getImageUrl(): String? = ((payload[SDUIConstants.PropKey.IMAGE_URL] ?: payload[SDUIConstants.PropKey.THUMBNAIL_URL]) as? String)
 }

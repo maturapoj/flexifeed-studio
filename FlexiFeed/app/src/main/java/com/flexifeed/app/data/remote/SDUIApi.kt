@@ -2,6 +2,7 @@ package com.flexifeed.app.data.remote
 
 import com.flexifeed.app.data.model.SDUIResponseDTO
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
@@ -12,5 +13,10 @@ interface SDUIApi {
     @GET("api/v1/home-feed")
     suspend fun getHomeFeed(
         @Query("campaign") campaign: String? = null
+    ): SDUIResponseDTO
+
+    @GET("api/v1/screen/{screenId}")
+    suspend fun getScreen(
+        @Path("screenId") screenId: String
     ): SDUIResponseDTO
 }

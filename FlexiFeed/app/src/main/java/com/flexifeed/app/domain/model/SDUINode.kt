@@ -4,10 +4,19 @@ import androidx.compose.runtime.Immutable
 import com.flexifeed.app.domain.action.SDUIAction
 
 @Immutable
+data class SDUILogoTheme(
+    val bgColorHex: String? = null,
+    val iconColorHex: String? = null,
+    val titleColorHex: String? = null,
+    val subtitleColorHex: String? = null
+)
+
+@Immutable
 data class SDUITheme(
     val primaryColorHex: String? = null,
     val accentColorHex: String? = null,
-    val isDarkMode: Boolean = false
+    val isDarkMode: Boolean = false,
+    val logoTheme: SDUILogoTheme? = null
 )
 
 /**

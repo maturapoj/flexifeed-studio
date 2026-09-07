@@ -25,7 +25,29 @@ data class SDUIThemeDTO(
     @SerializedName("accentColor")
     val accentColor: String? = null,
     @SerializedName("mode")
-    val mode: String? = null
+    val mode: String? = null,
+    @SerializedName("logo")
+    val logo: SDUILogoThemeDTO? = null,
+    @SerializedName("logoBgColor")
+    val logoBgColor: String? = null,
+    @SerializedName("logoIconColor")
+    val logoIconColor: String? = null,
+    @SerializedName("logoSubtitleColor")
+    val logoSubtitleColor: String? = null
+)
+
+/**
+ * Dedicated theme customization for the brand logo.
+ */
+data class SDUILogoThemeDTO(
+    @SerializedName("bgColor")
+    val bgColor: String? = null,
+    @SerializedName("iconColor")
+    val iconColor: String? = null,
+    @SerializedName("titleColor")
+    val titleColor: String? = null,
+    @SerializedName("subtitleColor")
+    val subtitleColor: String? = null
 )
 
 /**
