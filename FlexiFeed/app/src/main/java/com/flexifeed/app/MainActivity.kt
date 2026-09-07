@@ -22,10 +22,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.flexifeed.app.domain.action.AnalyticsTracker
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.ui.home.CartViewModel
-import com.flexifeed.app.ui.home.HomeScreen
 import com.flexifeed.app.ui.home.HomeViewModel
+import com.flexifeed.app.ui.navigation.FlexiFeedNavGraph
 import com.flexifeed.app.ui.state.SDUIFeedUiState
-import com.flexifeed.app.ui.sdui.ActionDispatcher
 import com.flexifeed.app.ui.theme.FlexiFeedTheme
 import com.flexifeed.app.ui.theme.parseHexColorOrNull
 
@@ -54,24 +53,14 @@ class MainActivity : ComponentActivity() {
                 primaryColor = primaryColor,
                 accentColor = accentColor
             ) {
-                val navController = rememberNavController()
-                val actionDispatcher = remember {
-                    ActionDispatcher(
-                        navController = navController,
-                        cartViewModel = cartViewModel,
-                        analyticsTracker = analyticsTracker
-                    )
-                }
-
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HomeScreen(
-                        viewModel = homeViewModel,
+                    FlexiFeedNavGraph(
+                        homeViewModel = homeViewModel,
                         cartViewModel = cartViewModel,
-                        analyticsTracker = analyticsTracker,
-                        actionDispatcher = actionDispatcher
+                        analyticsTracker = analyticsTracker
                     )
                 }
             }

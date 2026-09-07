@@ -25,7 +25,15 @@ class ActionDispatcher(
                 analyticsTracker.logEvent("navigate", mapOf(SDUIConstants.ActionKey.TARGET to url))
                 onNavigateUrl?.invoke(url)
                 try {
-                    navController.navigate(Uri.parse(url))
+                    val uri = Uri.parse(url)
+                    val host = uri.host // product, campaign
+                    val path = uri.path?.removePrefix("/") // 101, mega-sale
+                    val screenId = if (host != null && path != null) {
+                        "${host}_$path".replace("-", "_")
+                    } else {
+                        "home"
+                    }
+                    navController.navigate("sdui/$screenId")
                 } catch (e: Exception) {
                     Log.w(tag, "NavController direct navigate fallback for url: $url (${e.localizedMessage})")
                 }
@@ -33,9 +41,9 @@ class ActionDispatcher(
             SDUIConstants.ActionType.ADD_TO_CART -> {
                 val productId = action.getProductId() ?: return
                 val quantity = action.getQuantity()
-                val name = (action.payload[SDUIConstants.PropKey.NAME] as? String) ?: "สินค้า FlexiFeed"
-                val price = (action.payload[SDUIConstants.PropKey.PRICE] as? String) ?: "฿890"
-                val imageUrl = ((action.payload[SDUIConstants.PropKey.IMAGE_URL] ?: action.payload[SDUIConstants.PropKey.THUMBNAIL_URL]) as? String) ?: ""
+                val name = action.getName() ?: "Product"
+                val price = action.getPrice() ?: ""
+                val imageUrl = action.getImageUrl() ?: ""
                 cartViewModel.addToCart(productId, quantity, name, price, imageUrl)
                 analyticsTracker.logEvent("add_to_cart", mapOf(
                     SDUIConstants.ActionKey.PRODUCT_ID to productId,
