@@ -179,4 +179,15 @@ class HomeMviTest {
         streamFlow.emit(com.flexifeed.app.data.remote.SDUIStreamEvent.Disconnected())
         assertFalse(testViewModel.uiState.value.isLiveConnected)
     }
+
+    @Test
+    fun `CampaignType enum resolves slug correctly`() {
+        assertEquals("mega-sale", CampaignType.DEFAULT_FEED.id)
+        assertEquals("tech-weekend", CampaignType.TECH_WEEKEND.id)
+        assertEquals(CampaignType.TECH_WEEKEND, CampaignType.fromId("tech-weekend"))
+        assertEquals(CampaignType.DEFAULT_FEED, CampaignType.fromId("mega-sale"))
+        assertEquals(CampaignType.DEFAULT_FEED, CampaignType.fromId("unknown"))
+        assertEquals(CampaignType.DEFAULT_FEED, CampaignType.fromId(null))
+    }
 }
+

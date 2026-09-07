@@ -203,10 +203,10 @@ class HomeViewModel(
     }
 
     fun performLiveHotReload(presetId: String? = null) {
-        val targetCampaign = when (presetId) {
-            "tech-weekend" -> CampaignType.TECH_WEEKEND
-            "mega-sale" -> CampaignType.DEFAULT_FEED
-            else -> _uiState.value.currentCampaign
+        val targetCampaign = if (presetId != null) {
+            CampaignType.fromId(presetId)
+        } else {
+            _uiState.value.currentCampaign
         }
         _uiState.update { it.copy(isHotReloading = true, currentCampaign = targetCampaign) }
         scope.launch {
