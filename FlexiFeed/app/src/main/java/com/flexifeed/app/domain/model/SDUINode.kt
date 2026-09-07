@@ -1,7 +1,9 @@
 package com.flexifeed.app.domain.model
 
+import androidx.compose.runtime.Immutable
 import com.flexifeed.app.domain.action.SDUIAction
 
+@Immutable
 data class SDUITheme(
     val primaryColorHex: String? = null,
     val accentColorHex: String? = null,
@@ -11,6 +13,7 @@ data class SDUITheme(
 /**
  * Screen entity containing the list of root SDUI section nodes.
  */
+@Immutable
 data class SDUIScreen(
     val screen: String,
     val version: String,
@@ -21,6 +24,7 @@ data class SDUIScreen(
 /**
  * Clean domain model for any node in the Server-Driven UI tree.
  */
+@Immutable
 data class SDUINode(
     val id: String,
     val type: String,

@@ -31,7 +31,7 @@ fun SDUIRenderer(
 ) {
     val renderer = ComponentRegistry.get(node.type)
     if (renderer != null) {
-        renderer(node, onAction)
+        renderer.Render(node, onAction)
     } else {
         Log.w(TAG, "No component renderer registered for type: ${node.type}")
         UnknownComponentFallback(node = node, modifier = modifier)

@@ -1,10 +1,12 @@
 package com.flexifeed.app.domain.action
 
+import androidx.compose.runtime.Immutable
 import com.flexifeed.app.domain.model.SDUIConstants
 
 /**
  * Domain representation of an SDUI Action contract.
  */
+@Immutable
 data class SDUIAction(
     val type: String,
     val payload: Map<String, Any?> = emptyMap()
