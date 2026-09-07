@@ -1,0 +1,18 @@
+{
+  "name": "flexifeed-studio-server",
+  "version": "1.0.0",
+  "description": "Lightweight Server-Driven UI API & Responsive Studio Backoffice",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node -e \"const fs = require('fs'); JSON.parse(fs.readFileSync('data/feed.json')); console.log('✔ feed.json is valid!');\""
+  },
+  "keywords": [
+    "sdui",
+    "server-driven-ui",
+    "android",
+    "compose"
+  ],
+  "author": "",
+  "license": "MIT"
+}
