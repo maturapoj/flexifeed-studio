@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-ci:
+    name: Android Unit Tests & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x FlexiFeed/gradlew
+
+      - name: Run Android Unit Tests
+        run: |
+          cd FlexiFeed
+          ./gradlew testDevDebugUnitTest --no-daemon --stacktrace
+
+      - name: Assemble Dev Debug APK
+        run: |
+          cd FlexiFeed
+          ./gradlew assembleDevDebug --no-daemon --stacktrace
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: FlexiFeed/app/build/reports/tests/testDevDebugUnitTest/
+          retention-days: 7
+
+      - name: Upload Dev Debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-dev-debug
+          path: FlexiFeed/app/build/outputs/apk/dev/debug/*.apk
+          retention-days: 7
+
+  server-ci:
+    name: Node.js Server & DSL Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd server
+          npm install
+
+      - name: Validate SDUI JSON DSL & Presets
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const dir = 'server/data';
+            const files = ['feed.json', 'presets/mega-sale.json', 'presets/tech-weekend.json'];
+            files.forEach(f => {
+              const fullPath = path.join(dir, f);
+              const data = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
+              if (!data.screen || !data.sections) {
+                throw new Error(`Invalid SDUI DSL schema in ${f}`);
+              }
+              console.log(`✔ Valid SDUI DSL: ${f} (sections: ${data.sections.length})`);
+            });
+          "
