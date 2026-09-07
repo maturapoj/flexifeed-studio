@@ -1,13 +1,14 @@
 package com.flexifeed.app.data.remote
 
-enum class CampaignType {
-    DEFAULT_FEED,
-    TECH_WEEKEND
-}
+import com.flexifeed.app.data.model.SDUIResponseDTO
+
+// Backward compatibility alias for imports from data.remote
+typealias CampaignType = com.flexifeed.app.domain.model.CampaignType
 
 /**
  * Clean service contract for fetching Server-Driven UI feeds.
+ * Directly returns [SDUIResponseDTO] parsed by network client or mock provider.
  */
 interface SDUIService {
-    suspend fun getHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): String
+    suspend fun getHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): SDUIResponseDTO
 }

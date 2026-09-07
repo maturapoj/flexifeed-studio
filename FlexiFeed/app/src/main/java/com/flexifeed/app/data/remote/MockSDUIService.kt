@@ -1,15 +1,27 @@
 package com.flexifeed.app.data.remote
 
+import com.flexifeed.app.data.model.SDUIResponseDTO
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 
 /**
  * Offline Mock implementation of SDUIService providing bundled DSL presets.
  */
-class MockSDUIService : SDUIService {
+class MockSDUIService(
+    private val gson: Gson = Gson()
+) : SDUIService {
 
-    override suspend fun getHomeFeed(campaign: CampaignType): String {
+    override suspend fun getHomeFeed(campaign: CampaignType): SDUIResponseDTO {
         // Simulate realistic network roundtrip delay
         delay(400)
+        val json = when (campaign) {
+            CampaignType.DEFAULT_FEED -> DEFAULT_HOME_FEED_JSON
+            CampaignType.TECH_WEEKEND -> TECH_WEEKEND_FEED_JSON
+        }
+        return gson.fromJson(json, SDUIResponseDTO::class.java)
+    }
+
+    fun getRawJson(campaign: CampaignType): String {
         return when (campaign) {
             CampaignType.DEFAULT_FEED -> DEFAULT_HOME_FEED_JSON
             CampaignType.TECH_WEEKEND -> TECH_WEEKEND_FEED_JSON

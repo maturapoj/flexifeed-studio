@@ -3,9 +3,9 @@ package com.flexifeed.app.data.repository
 import com.flexifeed.app.data.model.SDUIActionDTO
 import com.flexifeed.app.data.model.SDUINodeDTO
 import com.flexifeed.app.data.model.SDUIResponseDTO
-import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.data.remote.MockSDUIService
 import com.flexifeed.app.domain.action.SDUIAction
+import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen
 import com.flexifeed.app.domain.model.SDUIConstants
@@ -23,14 +23,9 @@ class SDUIRepository(
         private set
 
     suspend fun fetchHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): Result<SDUIScreen> {
-        // Attempt live fetch via remote SDUIService (Retrofit) first
+        // Attempt live fetch via remote SDUIService (Retrofit automatically parses into SDUIResponseDTO)
         return try {
-            val responseDTO = if (remoteService is RemoteSDUIService) {
-                remoteService.getHomeFeedDTO(campaign)
-            } else {
-                val liveJson = remoteService.getHomeFeed(campaign)
-                gson.fromJson(liveJson, SDUIResponseDTO::class.java)
-            }
+            val responseDTO = remoteService.getHomeFeed(campaign)
             val screen = mapToDomain(responseDTO)
             isLiveServerConnected = true
             Result.success(screen)
@@ -38,9 +33,8 @@ class SDUIRepository(
             // Graceful fallback to mock SDUIService when server is offline
             try {
                 isLiveServerConnected = false
-                val fallbackJson = mockService.getHomeFeed(campaign)
-                val responseDTO = gson.fromJson(fallbackJson, SDUIResponseDTO::class.java)
-                val screen = mapToDomain(responseDTO)
+                val fallbackDTO = mockService.getHomeFeed(campaign)
+                val screen = mapToDomain(fallbackDTO)
                 Result.success(screen)
             } catch (fallbackError: Exception) {
                 Result.failure(fallbackError)
