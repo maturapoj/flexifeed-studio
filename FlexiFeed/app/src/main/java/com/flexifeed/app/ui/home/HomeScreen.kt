@@ -20,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.action.AnalyticsEvent
 import com.flexifeed.app.domain.action.AnalyticsTracker
 import com.flexifeed.app.domain.action.SDUIAction
+import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen

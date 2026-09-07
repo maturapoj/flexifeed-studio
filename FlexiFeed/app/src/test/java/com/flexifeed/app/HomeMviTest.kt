@@ -1,7 +1,7 @@
 package com.flexifeed.app
 
-import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.action.SDUIAction
+import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.home.HomeViewModel
 import com.flexifeed.app.ui.state.HomeEffect

@@ -1,7 +1,7 @@
 package com.flexifeed.app.ui.state
 
 import androidx.compose.runtime.Immutable
-import com.flexifeed.app.data.remote.CampaignType
+import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIScreen
 
 /**
