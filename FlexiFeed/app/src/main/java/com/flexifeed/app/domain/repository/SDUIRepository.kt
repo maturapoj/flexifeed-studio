@@ -9,4 +9,5 @@ import com.flexifeed.app.domain.model.SDUIScreen
 interface SDUIRepository {
     val isLiveServerConnected: Boolean
     suspend fun fetchHomeFeed(campaign: CampaignType = CampaignType.DEFAULT_FEED): Result<SDUIScreen>
+    suspend fun fetchScreen(screenId: String): Result<SDUIScreen>
 }

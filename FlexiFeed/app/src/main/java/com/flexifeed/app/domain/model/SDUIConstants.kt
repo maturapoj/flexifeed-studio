@@ -9,12 +9,21 @@ object SDUIConstants {
     /**
      * Registered Component Types.
      */
+    /**
+     * Registered Component Types.
+     */
     object ComponentType {
         const val CAROUSEL = "CAROUSEL"
         const val HORIZONTAL_LIST = "HORIZONTAL_LIST"
         const val GRID_2X2 = "GRID_2X2"
         const val PRODUCT_CARD_COMPACT = "PRODUCT_CARD_COMPACT"
         const val PRODUCT_CARD_FULL = "PRODUCT_CARD_FULL"
+        const val TEXT = "TEXT"
+        const val IMAGE = "IMAGE"
+        const val BUTTON = "BUTTON"
+        const val ROW = "ROW"
+        const val COLUMN = "COLUMN"
+        const val SPACER = "SPACER"
     }
 
     /**
@@ -53,6 +62,18 @@ object SDUIConstants {
         const val BANNER_URL = "bannerUrl"
         const val IMAGE = "image"
         const val RATING = "rating"
+        const val TEXT = "text"
+        const val STYLE = "style"
+        const val WEIGHT = "weight"
+        const val COLOR = "color"
+        const val ALIGN = "align"
+        const val DECORATION = "decoration"
+        const val WIDTH = "width"
+        const val HEIGHT = "height"
+        const val PADDING = "padding"
+        const val SPACING = "spacing"
+        const val ICON = "icon"
+        const val HORIZONTAL_ALIGN = "horizontalAlign"
     }
 
     /**

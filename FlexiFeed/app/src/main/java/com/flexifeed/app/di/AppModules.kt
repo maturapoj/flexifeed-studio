@@ -2,7 +2,6 @@ package com.flexifeed.app.di
 
 import com.flexifeed.app.BuildConfig
 import com.flexifeed.app.data.remote.MockSDUIService
-import com.flexifeed.app.data.remote.RemoteSDUIService
 import com.flexifeed.app.data.remote.RemoteSDUIStreamService
 import com.flexifeed.app.data.remote.SDUIApi
 import com.flexifeed.app.data.repository.SDUIRepositoryImpl
@@ -55,18 +54,11 @@ val networkModule = module {
 }
 
 val repositoryModule = module {
-    single {
-        RemoteSDUIService(
-            baseUrl = BuildConfig.SDUI_BASE_URL,
-            gson = get(),
-            apiClient = get()
-        )
-    }
     single { MockSDUIService() }
     single<SDUIRepository> {
         SDUIRepositoryImpl(
-            remoteService = get<RemoteSDUIService>(),
-            mockService = get<MockSDUIService>(),
+            api = get(),
+            mockService = get(),
             gson = get()
         )
     }
