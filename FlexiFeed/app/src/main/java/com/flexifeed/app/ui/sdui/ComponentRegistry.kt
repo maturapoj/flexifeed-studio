@@ -14,10 +14,16 @@ import com.flexifeed.app.domain.model.SDUIConstants.ComponentType.HORIZONTAL_LIS
 import com.flexifeed.app.domain.model.SDUIConstants.ComponentType.PRODUCT_CARD_COMPACT
 import com.flexifeed.app.domain.model.SDUIConstants.ComponentType.PRODUCT_CARD_FULL
 
-typealias SDUIRendererContent = @Composable (node: SDUINode, onAction: (SDUIAction) -> Unit) -> Unit
+/**
+ * Functional interface contract for rendering Server-Driven UI component nodes.
+ */
+fun interface SDUIComponentRenderer {
+    @Composable
+    fun Render(node: SDUINode, onAction: (SDUIAction) -> Unit)
+}
 
 object ComponentRegistry {
-    private val renderers = mutableMapOf<String, SDUIRendererContent>()
+    private val renderers = mutableMapOf<String, SDUIComponentRenderer>()
 
     init {
         register(CAROUSEL) { node, onAction -> CarouselComponent(node, onAction) }
@@ -27,11 +33,11 @@ object ComponentRegistry {
         register(PRODUCT_CARD_FULL) { node, onAction -> ProductCardFull(node, onAction) }
     }
 
-    fun register(type: String, renderer: SDUIRendererContent) {
+    fun register(type: String, renderer: SDUIComponentRenderer) {
         renderers[type] = renderer
     }
 
-    fun get(type: String): SDUIRendererContent? = renderers[type]
+    fun get(type: String): SDUIComponentRenderer? = renderers[type]
 
     fun has(type: String): Boolean = renderers.containsKey(type)
 
