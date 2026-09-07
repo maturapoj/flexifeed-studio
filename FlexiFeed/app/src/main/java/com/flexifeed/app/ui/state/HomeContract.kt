@@ -5,8 +5,8 @@ import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUITheme
 
 /**
- * MVI Contract for the Home Screen.
- * Contains the single source of truth State, user Intents, and one-shot SideEffects.
+ * UI State and Event Model contract for the Home Screen.
+ * Exposes a single [HomeUiState] model and [HomeEvent] model for all user actions.
  */
 
 data class HomeUiState(
@@ -24,20 +24,24 @@ data class HomeUiState(
         get() = (feedState as? SDUIFeedUiState.Success)?.screen?.theme
 }
 
-sealed interface HomeIntent {
-    data class LoadFeed(val campaign: CampaignType = CampaignType.DEFAULT_FEED) : HomeIntent
-    data class Refresh(val isPullToRefresh: Boolean = true) : HomeIntent
-    data class SwitchCampaign(val campaign: CampaignType) : HomeIntent
-    data class SearchQueryChanged(val query: String) : HomeIntent
-    data object ClearSearch : HomeIntent
-    data class SetCartSheetVisible(val isVisible: Boolean) : HomeIntent
-    data class SetAnalyticsSheetVisible(val isVisible: Boolean) : HomeIntent
-    data class SetNavigationTargetUrl(val url: String?) : HomeIntent
-    data class HandleSDUIAction(val action: SDUIAction) : HomeIntent
-    data class UpdateCartCount(val count: Int) : HomeIntent
-    data class UpdateAnalyticsCount(val count: Int) : HomeIntent
+sealed interface HomeEvent {
+    data class LoadFeed(val campaign: CampaignType = CampaignType.DEFAULT_FEED) : HomeEvent
+    data class Refresh(val isPullToRefresh: Boolean = true) : HomeEvent
+    data class SwitchCampaign(val campaign: CampaignType) : HomeEvent
+    data class SearchQueryChanged(val query: String) : HomeEvent
+    data object ClearSearch : HomeEvent
+    data class SetCartSheetVisible(val isVisible: Boolean) : HomeEvent
+    data class SetAnalyticsSheetVisible(val isVisible: Boolean) : HomeEvent
+    data class SetNavigationTargetUrl(val url: String?) : HomeEvent
+    data class HandleSDUIAction(val action: SDUIAction) : HomeEvent
+    data class UpdateCartCount(val count: Int) : HomeEvent
+    data class UpdateAnalyticsCount(val count: Int) : HomeEvent
 }
 
-sealed interface HomeSideEffect {
-    data class ShowSnackbar(val message: String) : HomeSideEffect
+typealias HomeIntent = HomeEvent
+
+sealed interface HomeEffect {
+    data class ShowSnackbar(val message: String) : HomeEffect
 }
+
+typealias HomeSideEffect = HomeEffect

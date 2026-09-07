@@ -4,11 +4,10 @@ import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.ui.home.HomeViewModel
-import com.flexifeed.app.ui.state.HomeIntent
-import com.flexifeed.app.ui.state.HomeSideEffect
+import com.flexifeed.app.ui.state.HomeEffect
+import com.flexifeed.app.ui.state.HomeEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -28,8 +27,8 @@ class HomeMviTest {
     }
 
     @Test
-    fun `initial state has default values and loads default campaign feed`() {
-        val state = viewModel.state.value
+    fun `initial uiState has default values and loads default campaign feed`() {
+        val state = viewModel.uiState.value
         assertEquals(CampaignType.DEFAULT_FEED, state.currentCampaign)
         assertEquals("", state.searchQuery)
         assertFalse(state.isCartSheetVisible)
@@ -41,88 +40,88 @@ class HomeMviTest {
     }
 
     @Test
-    fun `SearchQueryChanged intent updates searchQuery in state`() {
-        viewModel.onIntent(HomeIntent.SearchQueryChanged("หูฟัง"))
-        assertEquals("หูฟัง", viewModel.state.value.searchQuery)
+    fun `SearchQueryChanged event updates searchQuery in uiState`() {
+        viewModel.onEvent(HomeEvent.SearchQueryChanged("หูฟัง"))
+        assertEquals("หูฟัง", viewModel.uiState.value.searchQuery)
 
-        viewModel.onIntent(HomeIntent.SearchQueryChanged("คีย์บอร์ดเกมมิ่ง"))
-        assertEquals("คีย์บอร์ดเกมมิ่ง", viewModel.state.value.searchQuery)
+        viewModel.onEvent(HomeEvent.SearchQueryChanged("คีย์บอร์ดเกมมิ่ง"))
+        assertEquals("คีย์บอร์ดเกมมิ่ง", viewModel.uiState.value.searchQuery)
     }
 
     @Test
-    fun `ClearSearch intent resets searchQuery to empty`() {
-        viewModel.onIntent(HomeIntent.SearchQueryChanged("สมาร์ตวอทช์"))
-        assertEquals("สมาร์ตวอทช์", viewModel.state.value.searchQuery)
+    fun `ClearSearch event resets searchQuery to empty`() {
+        viewModel.onEvent(HomeEvent.SearchQueryChanged("สมาร์ตวอทช์"))
+        assertEquals("สมาร์ตวอทช์", viewModel.uiState.value.searchQuery)
 
-        viewModel.onIntent(HomeIntent.ClearSearch)
-        assertEquals("", viewModel.state.value.searchQuery)
+        viewModel.onEvent(HomeEvent.ClearSearch)
+        assertEquals("", viewModel.uiState.value.searchQuery)
     }
 
     @Test
-    fun `SetCartSheetVisible intent toggles cart sheet state`() {
-        assertFalse(viewModel.state.value.isCartSheetVisible)
+    fun `SetCartSheetVisible event toggles cart sheet state`() {
+        assertFalse(viewModel.uiState.value.isCartSheetVisible)
 
-        viewModel.onIntent(HomeIntent.SetCartSheetVisible(true))
-        assertTrue(viewModel.state.value.isCartSheetVisible)
+        viewModel.onEvent(HomeEvent.SetCartSheetVisible(true))
+        assertTrue(viewModel.uiState.value.isCartSheetVisible)
 
-        viewModel.onIntent(HomeIntent.SetCartSheetVisible(false))
-        assertFalse(viewModel.state.value.isCartSheetVisible)
+        viewModel.onEvent(HomeEvent.SetCartSheetVisible(false))
+        assertFalse(viewModel.uiState.value.isCartSheetVisible)
     }
 
     @Test
-    fun `SetAnalyticsSheetVisible intent toggles analytics sheet state`() {
-        assertFalse(viewModel.state.value.isAnalyticsSheetVisible)
+    fun `SetAnalyticsSheetVisible event toggles analytics sheet state`() {
+        assertFalse(viewModel.uiState.value.isAnalyticsSheetVisible)
 
-        viewModel.onIntent(HomeIntent.SetAnalyticsSheetVisible(true))
-        assertTrue(viewModel.state.value.isAnalyticsSheetVisible)
+        viewModel.onEvent(HomeEvent.SetAnalyticsSheetVisible(true))
+        assertTrue(viewModel.uiState.value.isAnalyticsSheetVisible)
 
-        viewModel.onIntent(HomeIntent.SetAnalyticsSheetVisible(false))
-        assertFalse(viewModel.state.value.isAnalyticsSheetVisible)
+        viewModel.onEvent(HomeEvent.SetAnalyticsSheetVisible(false))
+        assertFalse(viewModel.uiState.value.isAnalyticsSheetVisible)
     }
 
     @Test
-    fun `SetNavigationTargetUrl intent sets and clears target url`() {
-        assertNull(viewModel.state.value.targetNavigationUrl)
+    fun `SetNavigationTargetUrl event sets and clears target url`() {
+        assertNull(viewModel.uiState.value.targetNavigationUrl)
 
         val target = "flexifeed://deals/flash-sale"
-        viewModel.onIntent(HomeIntent.SetNavigationTargetUrl(target))
-        assertEquals(target, viewModel.state.value.targetNavigationUrl)
+        viewModel.onEvent(HomeEvent.SetNavigationTargetUrl(target))
+        assertEquals(target, viewModel.uiState.value.targetNavigationUrl)
 
-        viewModel.onIntent(HomeIntent.SetNavigationTargetUrl(null))
-        assertNull(viewModel.state.value.targetNavigationUrl)
+        viewModel.onEvent(HomeEvent.SetNavigationTargetUrl(null))
+        assertNull(viewModel.uiState.value.targetNavigationUrl)
     }
 
     @Test
-    fun `HandleSDUIAction intent intercepts NAVIGATE action url`() {
+    fun `HandleSDUIAction event intercepts NAVIGATE action url`() {
         val action = SDUIAction(
             type = SDUIConstants.ActionType.NAVIGATE,
             payload = mapOf(SDUIConstants.ActionKey.TARGET to "flexifeed://products/123")
         )
-        viewModel.onIntent(HomeIntent.HandleSDUIAction(action))
-        assertEquals("flexifeed://products/123", viewModel.state.value.targetNavigationUrl)
+        viewModel.onEvent(HomeEvent.HandleSDUIAction(action))
+        assertEquals("flexifeed://products/123", viewModel.uiState.value.targetNavigationUrl)
     }
 
     @Test
     fun `UpdateCartCount and UpdateAnalyticsCount update respective counters`() {
-        viewModel.onIntent(HomeIntent.UpdateCartCount(5))
-        assertEquals(5, viewModel.state.value.cartCount)
+        viewModel.onEvent(HomeEvent.UpdateCartCount(5))
+        assertEquals(5, viewModel.uiState.value.cartCount)
 
-        viewModel.onIntent(HomeIntent.UpdateAnalyticsCount(12))
-        assertEquals(12, viewModel.state.value.analyticsEventsCount)
+        viewModel.onEvent(HomeEvent.UpdateAnalyticsCount(12))
+        assertEquals(12, viewModel.uiState.value.analyticsEventsCount)
     }
 
     @Test
-    fun `SwitchCampaign intent updates campaign in state`() {
-        viewModel.onIntent(HomeIntent.SwitchCampaign(CampaignType.TECH_WEEKEND))
-        assertEquals(CampaignType.TECH_WEEKEND, viewModel.state.value.currentCampaign)
+    fun `SwitchCampaign event updates campaign in uiState`() {
+        viewModel.onEvent(HomeEvent.SwitchCampaign(CampaignType.TECH_WEEKEND))
+        assertEquals(CampaignType.TECH_WEEKEND, viewModel.uiState.value.currentCampaign)
     }
 
     @Test
     fun `emitEffect emits side effect properly`() = runBlocking {
         val expectedMessage = "🎉 สินค้าพิเศษ Flash Sale!"
-        viewModel.emitEffect(HomeSideEffect.ShowSnackbar(expectedMessage))
+        viewModel.emitEffect(HomeEffect.ShowSnackbar(expectedMessage))
         val effect = viewModel.effect.first()
-        assertTrue(effect is HomeSideEffect.ShowSnackbar)
-        assertEquals(expectedMessage, (effect as HomeSideEffect.ShowSnackbar).message)
+        assertTrue(effect is HomeEffect.ShowSnackbar)
+        assertEquals(expectedMessage, (effect as HomeEffect.ShowSnackbar).message)
     }
 }

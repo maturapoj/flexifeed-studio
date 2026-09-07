@@ -5,6 +5,8 @@ import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.data.repository.SDUIRepository
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUIConstants
+import com.flexifeed.app.ui.state.HomeEffect
+import com.flexifeed.app.ui.state.HomeEvent
 import com.flexifeed.app.ui.state.HomeIntent
 import com.flexifeed.app.ui.state.HomeSideEffect
 import com.flexifeed.app.ui.state.HomeUiState
@@ -12,11 +14,12 @@ import com.flexifeed.app.ui.state.SDUIFeedUiState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,8 +28,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
- * MVI Container ViewModel for the Home Screen.
- * Exposes a single [state] StateFlow and [effect] SharedFlow, and processes [HomeIntent]s.
+ * ViewModel for the Home Screen using [uiState] and [HomeEvent] model.
+ * Exposes a single [uiState] StateFlow and processes user actions via [onEvent].
  */
 class HomeViewModel(
     private val repository: SDUIRepository = SDUIRepository(),
@@ -35,45 +38,50 @@ class HomeViewModel(
 
     private val scope = CoroutineScope(dispatcher + SupervisorJob())
 
-    private val _state = MutableStateFlow(HomeUiState())
-    val state: StateFlow<HomeUiState> = _state.asStateFlow()
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private val _effect = Channel<HomeSideEffect>(Channel.BUFFERED)
-    val effect: Flow<HomeSideEffect> = _effect.receiveAsFlow()
+    // Backward-compatible alias for state
+    val state: StateFlow<HomeUiState> get() = uiState
 
-    // Backward compatibility accessors backed by StateFlowMapper without requiring viewModelScope
-    val uiState: StateFlow<SDUIFeedUiState> = StateFlowMapper(_state) { it.feedState }
-    val isRefreshing: StateFlow<Boolean> = StateFlowMapper(_state) { it.isRefreshing }
+    private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
+    val effect: Flow<HomeEffect> = _effect.receiveAsFlow()
+
+    // Backward compatibility accessor for isRefreshing
+    val isRefreshing: StateFlow<Boolean> = StateFlowMapper(_uiState) { it.isRefreshing }
 
     init {
-        onIntent(HomeIntent.LoadFeed(_state.value.currentCampaign))
+        onEvent(HomeEvent.LoadFeed(_uiState.value.currentCampaign))
     }
 
     /**
-     * Single entry point for all UI intents.
+     * Single entry point for all UI events.
      */
-    fun onIntent(intent: HomeIntent) {
-        when (intent) {
-            is HomeIntent.LoadFeed -> loadFeed(intent.campaign)
-            is HomeIntent.Refresh -> refreshFeed(intent.isPullToRefresh)
-            is HomeIntent.SwitchCampaign -> switchCampaign(intent.campaign)
-            is HomeIntent.SearchQueryChanged -> updateSearchQuery(intent.query)
-            is HomeIntent.ClearSearch -> updateSearchQuery("")
-            is HomeIntent.SetCartSheetVisible -> updateCartSheetVisible(intent.isVisible)
-            is HomeIntent.SetAnalyticsSheetVisible -> updateAnalyticsSheetVisible(intent.isVisible)
-            is HomeIntent.SetNavigationTargetUrl -> updateNavigationTargetUrl(intent.url)
-            is HomeIntent.HandleSDUIAction -> handleSDUIAction(intent.action)
-            is HomeIntent.UpdateCartCount -> updateCartCount(intent.count)
-            is HomeIntent.UpdateAnalyticsCount -> updateAnalyticsCount(intent.count)
+    fun onEvent(event: HomeEvent) {
+        when (event) {
+            is HomeEvent.LoadFeed -> loadFeed(event.campaign)
+            is HomeEvent.Refresh -> refreshFeed(event.isPullToRefresh)
+            is HomeEvent.SwitchCampaign -> switchCampaign(event.campaign)
+            is HomeEvent.SearchQueryChanged -> updateSearchQuery(event.query)
+            is HomeEvent.ClearSearch -> updateSearchQuery("")
+            is HomeEvent.SetCartSheetVisible -> updateCartSheetVisible(event.isVisible)
+            is HomeEvent.SetAnalyticsSheetVisible -> updateAnalyticsSheetVisible(event.isVisible)
+            is HomeEvent.SetNavigationTargetUrl -> updateNavigationTargetUrl(event.url)
+            is HomeEvent.HandleSDUIAction -> handleSDUIAction(event.action)
+            is HomeEvent.UpdateCartCount -> updateCartCount(event.count)
+            is HomeEvent.UpdateAnalyticsCount -> updateAnalyticsCount(event.count)
         }
     }
 
-    fun loadFeed(campaign: CampaignType = _state.value.currentCampaign) {
-        _state.update { it.copy(feedState = SDUIFeedUiState.Loading, currentCampaign = campaign) }
+    // Backward compatibility for onIntent
+    fun onIntent(intent: HomeIntent) = onEvent(intent)
+
+    fun loadFeed(campaign: CampaignType = _uiState.value.currentCampaign) {
+        _uiState.update { it.copy(feedState = SDUIFeedUiState.Loading, currentCampaign = campaign) }
         scope.launch {
             repository.fetchHomeFeed(campaign)
                 .onSuccess { screen ->
-                    _state.update {
+                    _uiState.update {
                         it.copy(
                             feedState = SDUIFeedUiState.Success(
                                 screen = screen,
@@ -84,7 +92,7 @@ class HomeViewModel(
                     }
                 }
                 .onFailure { error ->
-                    _state.update {
+                    _uiState.update {
                         it.copy(
                             feedState = SDUIFeedUiState.Error(
                                 error.localizedMessage ?: "Failed to load Server-Driven UI feed"
@@ -97,12 +105,12 @@ class HomeViewModel(
 
     fun refreshFeed(isPullToRefresh: Boolean = false) {
         if (isPullToRefresh) {
-            _state.update { it.copy(isRefreshing = true) }
+            _uiState.update { it.copy(isRefreshing = true) }
             scope.launch {
-                val campaign = _state.value.currentCampaign
+                val campaign = _uiState.value.currentCampaign
                 repository.fetchHomeFeed(campaign)
                     .onSuccess { screen ->
-                        _state.update {
+                        _uiState.update {
                             it.copy(
                                 feedState = SDUIFeedUiState.Success(
                                     screen = screen,
@@ -114,11 +122,11 @@ class HomeViewModel(
                         }
                     }
                     .onFailure {
-                        _state.update { it.copy(isRefreshing = false) }
+                        _uiState.update { it.copy(isRefreshing = false) }
                     }
             }
         } else {
-            loadFeed(_state.value.currentCampaign)
+            loadFeed(_uiState.value.currentCampaign)
         }
     }
 
@@ -127,27 +135,27 @@ class HomeViewModel(
     }
 
     private fun updateSearchQuery(query: String) {
-        _state.update { it.copy(searchQuery = query) }
+        _uiState.update { it.copy(searchQuery = query) }
     }
 
     private fun updateCartSheetVisible(isVisible: Boolean) {
-        _state.update { it.copy(isCartSheetVisible = isVisible) }
+        _uiState.update { it.copy(isCartSheetVisible = isVisible) }
     }
 
     private fun updateAnalyticsSheetVisible(isVisible: Boolean) {
-        _state.update { it.copy(isAnalyticsSheetVisible = isVisible) }
+        _uiState.update { it.copy(isAnalyticsSheetVisible = isVisible) }
     }
 
     private fun updateNavigationTargetUrl(url: String?) {
-        _state.update { it.copy(targetNavigationUrl = url) }
+        _uiState.update { it.copy(targetNavigationUrl = url) }
     }
 
     private fun updateCartCount(count: Int) {
-        _state.update { it.copy(cartCount = count) }
+        _uiState.update { it.copy(cartCount = count) }
     }
 
     private fun updateAnalyticsCount(count: Int) {
-        _state.update { it.copy(analyticsEventsCount = count) }
+        _uiState.update { it.copy(analyticsEventsCount = count) }
     }
 
     private fun handleSDUIAction(action: SDUIAction) {
@@ -158,7 +166,7 @@ class HomeViewModel(
         }
     }
 
-    fun emitEffect(effect: HomeSideEffect) {
+    fun emitEffect(effect: HomeEffect) {
         _effect.trySend(effect)
     }
 
@@ -170,7 +178,7 @@ class HomeViewModel(
     /**
      * Lightweight adapter to map StateFlow<T> to StateFlow<R> synchronously without coroutine launch.
      */
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     private class StateFlowMapper<T, R>(
         private val source: StateFlow<T>,
         private val transform: (T) -> R

@@ -27,7 +27,6 @@ import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen
-import com.flexifeed.app.ui.state.CheckoutResult
 import com.flexifeed.app.ui.home.components.AnalyticsInspectorSheet
 import com.flexifeed.app.ui.home.components.CampaignSwitcherBar
 import com.flexifeed.app.ui.home.components.HomeFeedContent
@@ -36,15 +35,16 @@ import com.flexifeed.app.ui.home.components.HomeTopAppBar
 import com.flexifeed.app.ui.home.components.NavigationPreviewSheet
 import com.flexifeed.app.ui.sdui.ActionDispatcher
 import com.flexifeed.app.ui.state.CartItem
-import com.flexifeed.app.ui.state.HomeIntent
-import com.flexifeed.app.ui.state.HomeSideEffect
+import com.flexifeed.app.ui.state.CheckoutResult
+import com.flexifeed.app.ui.state.HomeEffect
+import com.flexifeed.app.ui.state.HomeEvent
 import com.flexifeed.app.ui.state.HomeUiState
 import com.flexifeed.app.ui.state.SDUIFeedUiState
 import com.flexifeed.app.ui.theme.FlexiFeedTheme
 
 /**
  * Stateful Coordinator Composable for the Home Screen.
- * Connects Koin ViewModels, collects MVI StateFlow and SideEffects, and delegates to [HomeScreenContent].
+ * Collects [HomeViewModel.uiState] and dispatches user actions via [HomeEvent] model.
  */
 @Composable
 fun HomeScreen(
@@ -54,7 +54,7 @@ fun HomeScreen(
     actionDispatcher: ActionDispatcher,
     modifier: Modifier = Modifier
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val cartCount by cartViewModel.totalItemCount.collectAsStateWithLifecycle()
     val richCartItems by cartViewModel.items.collectAsStateWithLifecycle()
     val analyticsEvents by analyticsTracker.events.collectAsStateWithLifecycle()
@@ -68,27 +68,27 @@ fun HomeScreen(
         }
     }
 
-    // Listen for MVI ViewModel SideEffects
+    // Listen for ViewModel Effects
     LaunchedEffect(viewModel) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is HomeSideEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is HomeEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
             }
         }
     }
 
     // Pass hoisted state to the pure stateless content container
-    val hoistedState = state.copy(
+    val hoistedState = uiState.copy(
         cartCount = cartCount,
         analyticsEventsCount = analyticsEvents.size
     )
 
     HomeScreenContent(
-        state = hoistedState,
+        uiState = hoistedState,
         richCartItems = richCartItems.values.toList(),
         cartTotalPriceFormatted = cartViewModel.calculateTotalFormatted(),
         analyticsEvents = analyticsEvents,
-        onIntent = viewModel::onIntent,
+        onEvent = viewModel::onEvent,
         onCartIncrement = cartViewModel::incrementQuantity,
         onCartDecrement = cartViewModel::decrementQuantity,
         onCartRemove = cartViewModel::removeItem,
@@ -96,7 +96,7 @@ fun HomeScreen(
         onCartCheckout = cartViewModel::checkout,
         onAnalyticsClear = analyticsTracker::clearEvents,
         onAction = { action ->
-            viewModel.onIntent(HomeIntent.HandleSDUIAction(action))
+            viewModel.onEvent(HomeEvent.HandleSDUIAction(action))
             actionDispatcher.handleAction(action)
         },
         snackbarHostState = snackbarHostState,
@@ -110,11 +110,11 @@ fun HomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenContent(
-    state: HomeUiState,
+    uiState: HomeUiState,
     richCartItems: List<CartItem>,
     cartTotalPriceFormatted: String,
     analyticsEvents: List<AnalyticsEvent>,
-    onIntent: (HomeIntent) -> Unit,
+    onEvent: (HomeEvent) -> Unit,
     onCartIncrement: (String) -> Unit,
     onCartDecrement: (String) -> Unit,
     onCartRemove: (String) -> Unit,
@@ -130,11 +130,11 @@ fun HomeScreenContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             HomeTopAppBar(
-                cartCount = state.cartCount,
-                analyticsCount = state.analyticsEventsCount,
-                onOpenAnalytics = { onIntent(HomeIntent.SetAnalyticsSheetVisible(true)) },
-                onOpenCart = { onIntent(HomeIntent.SetCartSheetVisible(true)) },
-                onRefresh = { onIntent(HomeIntent.Refresh(isPullToRefresh = true)) }
+                cartCount = uiState.cartCount,
+                analyticsCount = uiState.analyticsEventsCount,
+                onOpenAnalytics = { onEvent(HomeEvent.SetAnalyticsSheetVisible(true)) },
+                onOpenCart = { onEvent(HomeEvent.SetCartSheetVisible(true)) },
+                onRefresh = { onEvent(HomeEvent.Refresh(isPullToRefresh = true)) }
             )
         }
     ) { innerPadding ->
@@ -146,64 +146,64 @@ fun HomeScreenContent(
         ) {
             // SDUI Campaign Selector Strip
             CampaignSwitcherBar(
-                currentCampaign = state.currentCampaign,
-                onSwitchCampaign = { onIntent(HomeIntent.SwitchCampaign(it)) }
+                currentCampaign = uiState.currentCampaign,
+                onSwitchCampaign = { onEvent(HomeEvent.SwitchCampaign(it)) }
             )
 
             // Real-time Search / Filter bar
             HomeSearchBar(
-                query = state.searchQuery,
-                onQueryChange = { onIntent(HomeIntent.SearchQueryChanged(it)) },
-                onClearQuery = { onIntent(HomeIntent.ClearSearch) }
+                query = uiState.searchQuery,
+                onQueryChange = { onEvent(HomeEvent.SearchQueryChanged(it)) },
+                onClearQuery = { onEvent(HomeEvent.ClearSearch) }
             )
 
             // Main Feed Content (PullToRefresh + LazyColumn + Shimmer + Error State)
             HomeFeedContent(
-                feedState = state.feedState,
-                isRefreshing = state.isRefreshing,
-                searchQuery = state.searchQuery,
-                onRefresh = { onIntent(HomeIntent.Refresh(isPullToRefresh = true)) },
+                feedState = uiState.feedState,
+                isRefreshing = uiState.isRefreshing,
+                searchQuery = uiState.searchQuery,
+                onRefresh = { onEvent(HomeEvent.Refresh(isPullToRefresh = true)) },
                 onAction = onAction,
-                onClearSearch = { onIntent(HomeIntent.ClearSearch) },
+                onClearSearch = { onEvent(HomeEvent.ClearSearch) },
                 modifier = Modifier.weight(1f)
             )
         }
     }
 
     // Modal Bottom Sheet: Rich Interactive Cart & Checkout
-    if (state.isCartSheetVisible) {
+    if (uiState.isCartSheetVisible) {
         ModalBottomSheet(
-            onDismissRequest = { onIntent(HomeIntent.SetCartSheetVisible(false)) },
+            onDismissRequest = { onEvent(HomeEvent.SetCartSheetVisible(false)) },
             sheetState = rememberModalBottomSheetState()
         ) {
             CartBottomSheetContent(
                 cartItems = richCartItems,
-                totalCount = state.cartCount,
+                totalCount = uiState.cartCount,
                 totalPriceFormatted = cartTotalPriceFormatted,
                 onIncrement = onCartIncrement,
                 onDecrement = onCartDecrement,
                 onRemove = onCartRemove,
                 onClearCart = onCartClear,
                 onCheckout = onCartCheckout,
-                onClose = { onIntent(HomeIntent.SetCartSheetVisible(false)) }
+                onClose = { onEvent(HomeEvent.SetCartSheetVisible(false)) }
             )
         }
     }
 
     // Modal Bottom Sheet: Analytics Tracker
-    if (state.isAnalyticsSheetVisible) {
+    if (uiState.isAnalyticsSheetVisible) {
         AnalyticsInspectorSheet(
             events = analyticsEvents,
             onClear = onAnalyticsClear,
-            onDismiss = { onIntent(HomeIntent.SetAnalyticsSheetVisible(false)) }
+            onDismiss = { onEvent(HomeEvent.SetAnalyticsSheetVisible(false)) }
         )
     }
 
     // Modal Bottom Sheet: Deep Link Navigation Preview
-    state.targetNavigationUrl?.let { url ->
+    uiState.targetNavigationUrl?.let { url ->
         NavigationPreviewSheet(
             targetUrl = url,
-            onDismiss = { onIntent(HomeIntent.SetNavigationTargetUrl(null)) }
+            onDismiss = { onEvent(HomeEvent.SetNavigationTargetUrl(null)) }
         )
     }
 }
@@ -298,7 +298,7 @@ private fun HomeScreenPreviewSample() {
     )
 
     HomeScreenContent(
-        state = HomeUiState(
+        uiState = HomeUiState(
             feedState = SDUIFeedUiState.Success(
                 screen = sampleScreen,
                 campaign = CampaignType.DEFAULT_FEED,
@@ -310,7 +310,7 @@ private fun HomeScreenPreviewSample() {
         richCartItems = emptyList(),
         cartTotalPriceFormatted = "฿2,180",
         analyticsEvents = emptyList(),
-        onIntent = {},
+        onEvent = {},
         onCartIncrement = {},
         onCartDecrement = {},
         onCartRemove = {},

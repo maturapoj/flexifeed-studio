@@ -42,8 +42,8 @@ class MainActivity : ComponentActivity() {
         handleIncomingIntent(intent)
 
         setContent {
-            val homeState by homeViewModel.state.collectAsStateWithLifecycle()
-            val sduiTheme = homeState.sduiTheme
+            val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+            val sduiTheme = uiState.sduiTheme
 
             val isDark = sduiTheme?.isDarkMode ?: isSystemInDarkTheme()
             val primaryColor = parseHexColorOrNull(sduiTheme?.primaryColorHex)
