@@ -34,8 +34,8 @@ class CartViewModel : ViewModel() {
     fun addToCart(
         productId: String,
         quantity: Int = 1,
-        name: String = "สินค้า FlexiFeed",
-        priceFormatted: String = "฿890",
+        name: String = "Product",
+        priceFormatted: String = "",
         imageUrl: String = ""
     ) {
         val current = _itemsMap.value.toMutableMap()
@@ -43,18 +43,21 @@ class CartViewModel : ViewModel() {
         val newQty = (existing?.quantity ?: 0) + quantity
         val parsedPrice = parsePrice(priceFormatted)
 
+        val resolvedName = existing?.name?.takeIf { it.isNotBlank() } ?: name
+        val resolvedPriceNumeric = if (existing != null && existing.priceNumeric > 0.0) existing.priceNumeric else parsedPrice
+        val resolvedPriceFormatted = existing?.priceFormatted?.takeIf { it.isNotBlank() } ?: priceFormatted
+        val resolvedImageUrl = existing?.imageUrl?.takeIf { it.isNotBlank() } ?: imageUrl
+
         current[productId] = CartItem(
             id = productId,
-            name = if (!existing?.name.isNullOrEmpty() && existing?.name != "สินค้า FlexiFeed") existing!!.name else name,
-            priceNumeric = if (existing != null && existing.priceNumeric > 0.0) existing.priceNumeric else parsedPrice,
-            priceFormatted = if (!existing?.priceFormatted.isNullOrEmpty() && existing?.priceFormatted != "฿0") existing!!.priceFormatted else priceFormatted,
-            imageUrl = if (!existing?.imageUrl.isNullOrEmpty()) existing!!.imageUrl else imageUrl,
+            name = resolvedName,
+            priceNumeric = resolvedPriceNumeric,
+            priceFormatted = resolvedPriceFormatted,
+            imageUrl = resolvedImageUrl,
             quantity = newQty
         )
 
-        _itemsMap.value = current
-        _cartItems.value = current.mapValues { it.value.quantity }
-        _totalItemCount.value = current.values.sumOf { it.quantity }
+        updateCartState(current)
         _itemAddedEvent.tryEmit(CartItemAdded(productId, quantity))
     }
 
@@ -62,9 +65,7 @@ class CartViewModel : ViewModel() {
         val current = _itemsMap.value.toMutableMap()
         val item = current[productId] ?: return
         current[productId] = item.copy(quantity = item.quantity + 1)
-        _itemsMap.value = current
-        _cartItems.value = current.mapValues { it.value.quantity }
-        _totalItemCount.value = current.values.sumOf { it.quantity }
+        updateCartState(current)
     }
 
     fun decrementQuantity(productId: String) {
@@ -75,17 +76,13 @@ class CartViewModel : ViewModel() {
         } else {
             current[productId] = item.copy(quantity = item.quantity - 1)
         }
-        _itemsMap.value = current
-        _cartItems.value = current.mapValues { it.value.quantity }
-        _totalItemCount.value = current.values.sumOf { it.quantity }
+        updateCartState(current)
     }
 
     fun removeItem(productId: String) {
         val current = _itemsMap.value.toMutableMap()
         current.remove(productId)
-        _itemsMap.value = current
-        _cartItems.value = current.mapValues { it.value.quantity }
-        _totalItemCount.value = current.values.sumOf { it.quantity }
+        updateCartState(current)
     }
 
     fun calculateTotal(): Double {
@@ -112,13 +109,17 @@ class CartViewModel : ViewModel() {
     }
 
     fun clearCart() {
-        _itemsMap.value = emptyMap()
-        _cartItems.value = emptyMap()
-        _totalItemCount.value = 0
+        updateCartState(emptyMap())
+    }
+
+    private fun updateCartState(newMap: Map<String, CartItem>) {
+        _itemsMap.value = newMap
+        _cartItems.value = newMap.mapValues { it.value.quantity }
+        _totalItemCount.value = newMap.values.sumOf { it.quantity }
     }
 
     private fun parsePrice(str: String): Double {
         val clean = str.replace("[^0-9.]".toRegex(), "")
-        return clean.toDoubleOrNull() ?: 490.0
+        return clean.toDoubleOrNull() ?: 0.0
     }
 }

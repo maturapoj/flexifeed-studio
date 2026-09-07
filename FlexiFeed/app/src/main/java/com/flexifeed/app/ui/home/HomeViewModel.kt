@@ -1,9 +1,12 @@
 package com.flexifeed.app.ui.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.CampaignType
 import com.flexifeed.app.domain.model.SDUIConstants
+import com.flexifeed.app.domain.model.SDUIScreen
 import com.flexifeed.app.domain.model.SDUIStreamEvent
 import com.flexifeed.app.domain.repository.SDUIRepository
 import com.flexifeed.app.domain.repository.SDUIStreamService
@@ -12,20 +15,14 @@ import com.flexifeed.app.ui.state.HomeEvent
 import com.flexifeed.app.ui.state.HomeUiState
 import com.flexifeed.app.ui.state.SDUIFeedUiState
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -40,21 +37,15 @@ class HomeViewModel(
     private val dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ViewModel() {
 
-    private val scope = CoroutineScope(dispatcher + SupervisorJob())
+    private val tag = "HomeViewModel"
     private var fetchFeedJob: Job? = null
+    private var cachedHomeFeed: SDUIScreen? = null
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    // Backward-compatible alias for state
-    val state: StateFlow<HomeUiState> get() = uiState
-
     private val _effect = Channel<HomeEffect>(Channel.BUFFERED)
     val effect: Flow<HomeEffect> = _effect.receiveAsFlow()
-
-    val isRefreshing: StateFlow<Boolean> = _uiState
-        .map { it.isRefreshing }
-        .stateIn(scope, SharingStarted.Eagerly, _uiState.value.isRefreshing)
 
     init {
         onEvent(HomeEvent.LoadFeed(_uiState.value.currentCampaign))
@@ -63,15 +54,14 @@ class HomeViewModel(
 
     private fun observeLiveStream() {
         if (streamService == null) {
-            android.util.Log.d("HomeViewModel", "streamService is null - Live Stream disabled")
+            Log.d(tag, "streamService is null - Live Stream disabled")
             return
         }
-        android.util.Log.d("HomeViewModel", "Starting observeLiveStream...")
-        scope.launch {
-            android.util.Log.d("HomeViewModel", "Coroutines scope launched, calling collect on streamService...")
+        Log.d(tag, "Starting observeLiveStream...")
+        viewModelScope.launch(dispatcher) {
             try {
                 streamService.observeEvents().collect { event ->
-                    android.util.Log.d("HomeViewModel", "observeLiveStream event: $event")
+                    Log.d(tag, "observeLiveStream event: $event")
                     when (event) {
                         is SDUIStreamEvent.Connected -> {
                             onEvent(HomeEvent.LiveConnectionChanged(true))
@@ -85,7 +75,7 @@ class HomeViewModel(
                     }
                 }
             } catch (t: Throwable) {
-                android.util.Log.e("HomeViewModel", "Error in observeLiveStream: ${t.message}", t)
+                Log.e(tag, "Error in observeLiveStream: ${t.message}", t)
             }
         }
     }
@@ -96,6 +86,8 @@ class HomeViewModel(
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.LoadFeed -> loadFeed(event.campaign)
+            is HomeEvent.LoadScreen -> loadScreen(event.screenId)
+            is HomeEvent.RestoreHomeFeed -> restoreHomeFeed()
             is HomeEvent.Refresh -> refreshFeed(event.isPullToRefresh)
             is HomeEvent.SwitchCampaign -> switchCampaign(event.campaign)
             is HomeEvent.SearchQueryChanged -> updateSearchQuery(event.query)
@@ -112,16 +104,65 @@ class HomeViewModel(
     }
 
     fun loadFeed(campaign: CampaignType = _uiState.value.currentCampaign) {
-        _uiState.update { it.copy(feedState = SDUIFeedUiState.Loading, currentCampaign = campaign) }
+        _uiState.update { it.copy(feedState = SDUIFeedUiState.Loading, currentCampaign = campaign, currentScreenId = "home") }
         fetchFeedJob?.cancel()
-        fetchFeedJob = scope.launch {
+        fetchFeedJob = viewModelScope.launch(dispatcher) {
             repository.fetchHomeFeed(campaign)
                 .onSuccess { screen ->
+                    cachedHomeFeed = screen
                     _uiState.update {
                         it.copy(
                             feedState = SDUIFeedUiState.Success(
                                 screen = screen,
                                 campaign = campaign,
+                                isLiveServer = repository.isLiveServerConnected
+                            ),
+                            currentScreenId = "home"
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            feedState = SDUIFeedUiState.Error(
+                                error.localizedMessage ?: "Failed to load Server-Driven UI feed"
+                            ),
+                            currentScreenId = "home"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun restoreHomeFeed() {
+        val cached = cachedHomeFeed
+        if (cached != null) {
+            _uiState.update {
+                it.copy(
+                    feedState = SDUIFeedUiState.Success(
+                        screen = cached,
+                        campaign = it.currentCampaign,
+                        isLiveServer = repository.isLiveServerConnected
+                    ),
+                    currentScreenId = "home"
+                )
+            }
+        } else {
+            loadFeed(_uiState.value.currentCampaign)
+        }
+    }
+
+    fun loadScreen(screenId: String) {
+        _uiState.update { it.copy(feedState = SDUIFeedUiState.Loading, currentScreenId = screenId) }
+        fetchFeedJob?.cancel()
+        fetchFeedJob = viewModelScope.launch(dispatcher) {
+            repository.fetchScreen(screenId)
+                .onSuccess { screen ->
+                    _uiState.update {
+                        it.copy(
+                            feedState = SDUIFeedUiState.Success(
+                                screen = screen,
+                                campaign = _uiState.value.currentCampaign,
                                 isLiveServer = repository.isLiveServerConnected
                             )
                         )
@@ -131,7 +172,7 @@ class HomeViewModel(
                     _uiState.update {
                         it.copy(
                             feedState = SDUIFeedUiState.Error(
-                                error.localizedMessage ?: "Failed to load Server-Driven UI feed"
+                                error.localizedMessage ?: "Failed to load Server-Driven UI screen"
                             )
                         )
                     }
@@ -143,10 +184,11 @@ class HomeViewModel(
         if (isPullToRefresh) {
             _uiState.update { it.copy(isRefreshing = true) }
             fetchFeedJob?.cancel()
-            fetchFeedJob = scope.launch {
+            fetchFeedJob = viewModelScope.launch(dispatcher) {
                 val campaign = _uiState.value.currentCampaign
                 repository.fetchHomeFeed(campaign)
                     .onSuccess { screen ->
+                        cachedHomeFeed = screen
                         _uiState.update {
                             it.copy(
                                 feedState = SDUIFeedUiState.Success(
@@ -154,7 +196,8 @@ class HomeViewModel(
                                     campaign = campaign,
                                     isLiveServer = repository.isLiveServerConnected
                                 ),
-                                isRefreshing = false
+                                isRefreshing = false,
+                                currentScreenId = "home"
                             )
                         }
                     }
@@ -163,7 +206,11 @@ class HomeViewModel(
                     }
             }
         } else {
-            loadFeed(_uiState.value.currentCampaign)
+            if (_uiState.value.currentScreenId == "home") {
+                loadFeed(_uiState.value.currentCampaign)
+            } else {
+                loadScreen(_uiState.value.currentScreenId)
+            }
         }
     }
 
@@ -211,9 +258,10 @@ class HomeViewModel(
         }
         _uiState.update { it.copy(isHotReloading = true, currentCampaign = targetCampaign) }
         fetchFeedJob?.cancel()
-        fetchFeedJob = scope.launch {
+        fetchFeedJob = viewModelScope.launch(dispatcher) {
             repository.fetchHomeFeed(targetCampaign)
                 .onSuccess { screen ->
+                    cachedHomeFeed = screen
                     _uiState.update {
                         it.copy(
                             feedState = SDUIFeedUiState.Success(
@@ -221,6 +269,7 @@ class HomeViewModel(
                                 campaign = targetCampaign,
                                 isLiveServer = repository.isLiveServerConnected
                             ),
+                            currentScreenId = "home",
                             isHotReloading = false
                         )
                     }
@@ -238,10 +287,5 @@ class HomeViewModel(
 
     fun emitEffect(effect: HomeEffect) {
         _effect.trySend(effect)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        scope.cancel()
     }
 }

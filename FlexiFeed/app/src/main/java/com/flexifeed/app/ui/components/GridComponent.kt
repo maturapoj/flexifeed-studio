@@ -249,10 +249,17 @@ fun ProductCardFull(
             // Add to Cart Button
             Button(
                 onClick = {
-                    val baseAction = node.action ?: SDUIAction(
-                        type = SDUIConstants.ActionType.ADD_TO_CART,
-                        payload = mapOf(SDUIConstants.ActionKey.PRODUCT_ID to node.id)
-                    )
+                    val baseAction = if (node.action?.type == SDUIConstants.ActionType.ADD_TO_CART) {
+                        node.action
+                    } else {
+                        SDUIAction(
+                            type = SDUIConstants.ActionType.ADD_TO_CART,
+                            payload = mapOf(
+                                SDUIConstants.ActionKey.PRODUCT_ID to node.id,
+                                SDUIConstants.ActionKey.QUANTITY to 1
+                            )
+                        )
+                    }
                     val enrichedPayload = baseAction.payload.toMutableMap().apply {
                         put(SDUIConstants.PropKey.NAME, name)
                         put(SDUIConstants.PropKey.PRICE, price)

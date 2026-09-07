@@ -1,12 +1,7 @@
 package com.flexifeed.app.ui.home.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Refresh
@@ -21,13 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 /**
  * Top app bar for FlexiFeed home screen with state-hoisted callbacks.
@@ -40,7 +30,8 @@ fun HomeTopAppBar(
     onOpenAnalytics: () -> Unit,
     onOpenCart: () -> Unit,
     onRefresh: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    logoTheme: com.flexifeed.app.domain.model.SDUILogoTheme? = null
 ) {
     TopAppBar(
         modifier = modifier,
@@ -50,52 +41,7 @@ fun HomeTopAppBar(
             actionIconContentColor = MaterialTheme.colorScheme.onSurface
         ),
         title = {
-            val isDark = (0.299f * MaterialTheme.colorScheme.surface.red +
-                    0.587f * MaterialTheme.colorScheme.surface.green +
-                    0.114f * MaterialTheme.colorScheme.surface.blue) < 0.5f
-
-            val logoBoxBg = if (isDark) {
-                Color(0xFFE8EDFA) // Soft light contrast surface matching web mock
-            } else {
-                MaterialTheme.colorScheme.primaryContainer
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(logoBoxBg),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "🛒",
-                        fontSize = 19.sp
-                    )
-                }
-                Column(
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "FlexiFeed",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 18.sp
-                    )
-                    Text(
-                        text = "Server-Driven UI",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isDark) Color(0xFF94A3B8) else MaterialTheme.colorScheme.primary,
-                        fontSize = 10.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = 14.sp
-                    )
-                }
-            }
+            FlexiFeedLogo(logoTheme = logoTheme)
         },
         actions = {
             // Analytics Inspector

@@ -15,6 +15,7 @@ data class HomeUiState(
     val feedState: SDUIFeedUiState = SDUIFeedUiState.Loading,
     val isRefreshing: Boolean = false,
     val searchQuery: String = "",
+    val currentScreenId: String = "home",
     val currentCampaign: CampaignType = CampaignType.DEFAULT_FEED,
     val isCartSheetVisible: Boolean = false,
     val isAnalyticsSheetVisible: Boolean = false,
@@ -31,6 +32,7 @@ data class HomeUiState(
 @Immutable
 sealed interface HomeEvent {
     data class LoadFeed(val campaign: CampaignType = CampaignType.DEFAULT_FEED) : HomeEvent
+    data class LoadScreen(val screenId: String) : HomeEvent
     data class Refresh(val isPullToRefresh: Boolean = true) : HomeEvent
     data class SwitchCampaign(val campaign: CampaignType) : HomeEvent
     data class SearchQueryChanged(val query: String) : HomeEvent
@@ -43,6 +45,7 @@ sealed interface HomeEvent {
     data class UpdateAnalyticsCount(val count: Int) : HomeEvent
     data class LiveConnectionChanged(val isConnected: Boolean) : HomeEvent
     data class LiveHotReloadReceived(val presetId: String?) : HomeEvent
+    data object RestoreHomeFeed : HomeEvent
 }
 
 @Immutable
