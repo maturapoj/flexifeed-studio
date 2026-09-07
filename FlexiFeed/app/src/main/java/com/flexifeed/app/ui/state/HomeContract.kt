@@ -20,7 +20,9 @@ data class HomeUiState(
     val isAnalyticsSheetVisible: Boolean = false,
     val targetNavigationUrl: String? = null,
     val cartCount: Int = 0,
-    val analyticsEventsCount: Int = 0
+    val analyticsEventsCount: Int = 0,
+    val isLiveConnected: Boolean = false,
+    val isHotReloading: Boolean = false
 ) {
     val sduiTheme: SDUITheme?
         get() = (feedState as? SDUIFeedUiState.Success)?.screen?.theme
@@ -39,6 +41,8 @@ sealed interface HomeEvent {
     data class HandleSDUIAction(val action: SDUIAction) : HomeEvent
     data class UpdateCartCount(val count: Int) : HomeEvent
     data class UpdateAnalyticsCount(val count: Int) : HomeEvent
+    data class LiveConnectionChanged(val isConnected: Boolean) : HomeEvent
+    data class LiveHotReloadReceived(val presetId: String?) : HomeEvent
 }
 
 typealias HomeIntent = HomeEvent

@@ -124,4 +124,59 @@ class HomeMviTest {
         assertTrue(effect is HomeEffect.ShowSnackbar)
         assertEquals(expectedMessage, (effect as HomeEffect.ShowSnackbar).message)
     }
+
+    @Test
+    fun `LiveConnectionChanged event updates isLiveConnected in uiState`() {
+        assertFalse(viewModel.uiState.value.isLiveConnected)
+
+        viewModel.onEvent(HomeEvent.LiveConnectionChanged(true))
+        assertTrue(viewModel.uiState.value.isLiveConnected)
+
+        viewModel.onEvent(HomeEvent.LiveConnectionChanged(false))
+        assertFalse(viewModel.uiState.value.isLiveConnected)
+    }
+
+    @Test
+    fun `LiveHotReloadReceived event triggers silent reload and updates campaign`() = runBlocking {
+        val mockRepo = com.flexifeed.app.data.repository.SDUIRepository(
+            remoteService = com.flexifeed.app.data.remote.MockSDUIService(),
+            mockService = com.flexifeed.app.data.remote.MockSDUIService()
+        )
+        val testVm = HomeViewModel(
+            repository = mockRepo,
+            dispatcher = Dispatchers.Unconfined
+        )
+        testVm.onEvent(HomeEvent.LiveHotReloadReceived(presetId = "tech-weekend"))
+        assertEquals(CampaignType.TECH_WEEKEND, testVm.uiState.value.currentCampaign)
+        assertTrue(testVm.uiState.value.isHotReloading)
+
+        val effect = testVm.effect.first()
+        assertTrue(effect is HomeEffect.ShowSnackbar)
+        assertEquals("⚡ Live UI Hot-Reloaded!", (effect as HomeEffect.ShowSnackbar).message)
+        assertFalse(testVm.uiState.value.isHotReloading)
+    }
+
+    @Test
+    fun `HomeViewModel automatically subscribes to SDUIStreamService events`() = runBlocking {
+        val streamFlow = kotlinx.coroutines.flow.MutableSharedFlow<com.flexifeed.app.data.remote.SDUIStreamEvent>()
+        val fakeService = object : com.flexifeed.app.data.remote.SDUIStreamService {
+            override fun observeEvents() = streamFlow
+        }
+
+        val testViewModel = HomeViewModel(
+            streamService = fakeService,
+            dispatcher = Dispatchers.Unconfined
+        )
+
+        assertFalse(testViewModel.uiState.value.isLiveConnected)
+
+        streamFlow.emit(com.flexifeed.app.data.remote.SDUIStreamEvent.Connected())
+        assertTrue(testViewModel.uiState.value.isLiveConnected)
+
+        streamFlow.emit(com.flexifeed.app.data.remote.SDUIStreamEvent.FeedUpdated(presetId = "tech-weekend"))
+        assertEquals(CampaignType.TECH_WEEKEND, testViewModel.uiState.value.currentCampaign)
+
+        streamFlow.emit(com.flexifeed.app.data.remote.SDUIStreamEvent.Disconnected())
+        assertFalse(testViewModel.uiState.value.isLiveConnected)
+    }
 }

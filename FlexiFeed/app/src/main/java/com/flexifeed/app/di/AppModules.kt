@@ -1,6 +1,8 @@
 package com.flexifeed.app.di
 
 import com.flexifeed.app.BuildConfig
+import com.flexifeed.app.data.remote.RemoteSDUIStreamService
+import com.flexifeed.app.data.remote.SDUIStreamService
 import com.flexifeed.app.data.remote.MockSDUIService
 import com.flexifeed.app.data.remote.RemoteSDUIService
 import com.flexifeed.app.data.remote.SDUIApi
@@ -42,6 +44,13 @@ val networkModule = module {
     single<SDUIApi> {
         get<Retrofit>().create(SDUIApi::class.java)
     }
+
+    single<SDUIStreamService> {
+        RemoteSDUIStreamService(
+            okHttpClient = get(),
+            baseUrl = BuildConfig.SDUI_BASE_URL
+        )
+    }
 }
 
 val repositoryModule = module {
@@ -67,7 +76,7 @@ val domainModule = module {
 }
 
 val viewModelModule = module {
-    viewModel { HomeViewModel(repository = get()) }
+    viewModel { HomeViewModel(repository = get(), streamService = get()) }
     viewModel { CartViewModel() }
 }
 

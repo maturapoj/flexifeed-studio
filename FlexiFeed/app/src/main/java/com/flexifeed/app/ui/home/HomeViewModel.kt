@@ -2,6 +2,8 @@ package com.flexifeed.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import com.flexifeed.app.data.remote.CampaignType
+import com.flexifeed.app.data.remote.SDUIStreamEvent
+import com.flexifeed.app.data.remote.SDUIStreamService
 import com.flexifeed.app.data.repository.SDUIRepository
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUIConstants
@@ -31,6 +33,7 @@ import kotlinx.coroutines.launch
  */
 class HomeViewModel(
     private val repository: SDUIRepository = SDUIRepository(),
+    private val streamService: SDUIStreamService? = null,
     private val dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) : ViewModel() {
 
@@ -50,6 +53,36 @@ class HomeViewModel(
 
     init {
         onEvent(HomeEvent.LoadFeed(_uiState.value.currentCampaign))
+        observeLiveStream()
+    }
+
+    private fun observeLiveStream() {
+        if (streamService == null) {
+            android.util.Log.d("HomeViewModel", "streamService is null - Live Stream disabled")
+            return
+        }
+        android.util.Log.d("HomeViewModel", "Starting observeLiveStream...")
+        scope.launch {
+            android.util.Log.d("HomeViewModel", "Coroutines scope launched, calling collect on streamService...")
+            try {
+                streamService.observeEvents().collect { event ->
+                    android.util.Log.d("HomeViewModel", "observeLiveStream event: $event")
+                    when (event) {
+                        is SDUIStreamEvent.Connected -> {
+                            onEvent(HomeEvent.LiveConnectionChanged(true))
+                        }
+                        is SDUIStreamEvent.Disconnected -> {
+                            onEvent(HomeEvent.LiveConnectionChanged(false))
+                        }
+                        is SDUIStreamEvent.FeedUpdated -> {
+                            onEvent(HomeEvent.LiveHotReloadReceived(event.presetId))
+                        }
+                    }
+                }
+            } catch (t: Throwable) {
+                android.util.Log.e("HomeViewModel", "Error in observeLiveStream: ${t.message}", t)
+            }
+        }
     }
 
     /**
@@ -68,6 +101,8 @@ class HomeViewModel(
             is HomeEvent.HandleSDUIAction -> handleSDUIAction(event.action)
             is HomeEvent.UpdateCartCount -> updateCartCount(event.count)
             is HomeEvent.UpdateAnalyticsCount -> updateAnalyticsCount(event.count)
+            is HomeEvent.LiveConnectionChanged -> updateLiveConnection(event.isConnected)
+            is HomeEvent.LiveHotReloadReceived -> performLiveHotReload(event.presetId)
         }
     }
 
@@ -165,6 +200,38 @@ class HomeViewModel(
                 updateNavigationTargetUrl(url)
             }
         }
+    }
+
+    fun performLiveHotReload(presetId: String? = null) {
+        val targetCampaign = when (presetId) {
+            "tech-weekend" -> CampaignType.TECH_WEEKEND
+            "mega-sale" -> CampaignType.DEFAULT_FEED
+            else -> _uiState.value.currentCampaign
+        }
+        _uiState.update { it.copy(isHotReloading = true, currentCampaign = targetCampaign) }
+        scope.launch {
+            repository.fetchHomeFeed(targetCampaign)
+                .onSuccess { screen ->
+                    _uiState.update {
+                        it.copy(
+                            feedState = SDUIFeedUiState.Success(
+                                screen = screen,
+                                campaign = targetCampaign,
+                                isLiveServer = repository.isLiveServerConnected
+                            ),
+                            isHotReloading = false
+                        )
+                    }
+                    _effect.trySend(HomeEffect.ShowSnackbar("⚡ Live UI Hot-Reloaded!"))
+                }
+                .onFailure {
+                    _uiState.update { it.copy(isHotReloading = false) }
+                }
+        }
+    }
+
+    fun updateLiveConnection(isConnected: Boolean) {
+        _uiState.update { it.copy(isLiveConnected = isConnected) }
     }
 
     fun emitEffect(effect: HomeEffect) {
