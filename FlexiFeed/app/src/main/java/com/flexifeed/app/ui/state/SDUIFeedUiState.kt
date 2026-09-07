@@ -1,11 +1,13 @@
 package com.flexifeed.app.ui.state
 
+import androidx.compose.runtime.Immutable
 import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.model.SDUIScreen
 
 /**
  * Sealed interface representing UI State for the SDUI Feed.
  */
+@Immutable
 sealed interface SDUIFeedUiState {
     data object Loading : SDUIFeedUiState
 

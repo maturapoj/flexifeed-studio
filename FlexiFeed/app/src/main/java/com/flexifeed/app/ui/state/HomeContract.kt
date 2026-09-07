@@ -1,5 +1,6 @@
 package com.flexifeed.app.ui.state
 
+import androidx.compose.runtime.Immutable
 import com.flexifeed.app.data.remote.CampaignType
 import com.flexifeed.app.domain.action.SDUIAction
 import com.flexifeed.app.domain.model.SDUITheme
@@ -9,6 +10,7 @@ import com.flexifeed.app.domain.model.SDUITheme
  * Exposes a single [HomeUiState] model and [HomeEvent] model for all user actions.
  */
 
+@Immutable
 data class HomeUiState(
     val feedState: SDUIFeedUiState = SDUIFeedUiState.Loading,
     val isRefreshing: Boolean = false,
@@ -24,6 +26,7 @@ data class HomeUiState(
         get() = (feedState as? SDUIFeedUiState.Success)?.screen?.theme
 }
 
+@Immutable
 sealed interface HomeEvent {
     data class LoadFeed(val campaign: CampaignType = CampaignType.DEFAULT_FEED) : HomeEvent
     data class Refresh(val isPullToRefresh: Boolean = true) : HomeEvent
@@ -40,6 +43,7 @@ sealed interface HomeEvent {
 
 typealias HomeIntent = HomeEvent
 
+@Immutable
 sealed interface HomeEffect {
     data class ShowSnackbar(val message: String) : HomeEffect
 }
