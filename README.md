@@ -1,13 +1,15 @@
 # 🛒 FlexiFeed Studio: Server-Driven UI E-Commerce Platform
 
+[![CI](https://github.com/maturapoj/flexifeed-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/maturapoj/flexifeed-studio/actions/workflows/ci.yml)
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Android Min SDK](https://img.shields.io/badge/Min%20SDK-26-34A853?logo=android&logoColor=white)](https://developer.android.com)
 [![Target SDK](https://img.shields.io/badge/Target%20SDK-34-4285F4?logo=android&logoColor=white)](https://developer.android.com)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20BOM-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
-[![Node.js](https://img.shields.io/badge/Server-Node.js%20Express-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/Server-Node.js%20TypeScript-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**FlexiFeed Studio** is an end-to-end **Server-Driven UI (SDUI)** platform for modern e-commerce experiences. It combines a high-performance **Android client built with Jetpack Compose** and a **Node.js Web Studio Backoffice** connected via real-time Server-Sent Events (SSE). 
+**FlexiFeed Studio** is an end-to-end **Server-Driven UI (SDUI)** platform for modern e-commerce experiences. It combines a high-performance **Android client built with Jetpack Compose** and a **Modular TypeScript SDUI Server & Web Studio Backoffice** connected via real-time Server-Sent Events (SSE). 
 
 With FlexiFeed Studio, engineering, product, and marketing teams can instantly compose layouts, roll out marketing campaigns, customize branding themes, and adjust UI hierarchies in real-time—**without releasing an app update to Google Play**.
 
@@ -33,7 +35,8 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
 
 ## ✨ Key Features
 
-- ⚡ **Real-Time Live Stream Hot-Reload (SSE):** Streaming updates via `/api/v1/stream`. Switching presets or updating DSL on the Web Studio instantly re-renders the Android app without cold restarts.
+- ⚡ **Real-Time Live Stream Hot-Reload (SSE):** Streaming updates via `/api/v1/feed-stream`. Switching presets or modifying DSL on the Web Studio instantly re-renders the Android app without cold restarts.
+- 🔷 **Modular TypeScript SDUI Backend:** Clean, domain-driven architecture organized into `types/`, `config/`, `data/`, `services/`, and `routes/` with strict type safety and zero external runtime dependencies.
 - 🎨 **Dynamic Logo & Feed Theming:** Granular control over primary colors, accent colors, light/dark modes, and dedicated logo theme styling (background, icon, title, and subtitle colors).
 - 📱 **Multi-Screen SDUI Navigation:** Seamless native navigation across screens (`HOME_FEED`, `PRODUCT_DETAIL` like `product_201`, and `CAMPAIGN` feeds like `campaign_gadget_expo`) using Jetpack Navigation Compose with clean transitions and zero popup obstructions.
 - 🛒 **Interactive E-Commerce State:** Interactive cart management supporting add-to-cart directly from feed cards or detail pages, quantity steppers (+/-), enriched product metadata, and sticky badge counters.
@@ -42,8 +45,9 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
   - `NAVIGATE`: Native in-app navigation with deep-link parsing.
   - `ADD_TO_CART`: Cart mutation and local inventory synchronization.
   - `ANALYTICS`: Event tracking dispatched to `AnalyticsTracker`.
-- 💻 **Responsive Studio Backoffice:** Sleek, responsive web backoffice built with vanilla CSS/JS to inspect payloads, preview presets, and broadcast live hot-reloads.
+- 💻 **Responsive Studio Backoffice:** Sleek, responsive web backoffice built with modern CSS/JS to inspect payloads, preview presets, and broadcast live hot-reloads.
 - 🧪 **Clean Architecture & 100% Test Coverage:** Lean Clean Architecture without UseCase boilerplate. All 28 unit tests pass with a 100% success rate.
+- 🛠️ **Developer Tooling & Makefile:** Comprehensive CLI automation with `make` targets for Android testing/building, TypeScript compilation, and local server execution.
 
 ---
 
@@ -51,10 +55,10 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                 Node.js Studio Backoffice                   │
+│               TypeScript Studio Backoffice                  │
 │   (Port 8080: Web Backoffice GUI + REST API + SSE Stream)   │
 └──────────────┬───────────────────────────────┬──────────────┘
-               │ HTTP GET /api/v1/home-feed    │ SSE /api/v1/stream
+               │ HTTP GET /api/v1/home-feed    │ SSE /api/v1/feed-stream
                ▼                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    SDUIRepositoryImpl                       │
@@ -87,15 +91,15 @@ Example payload returned from `/api/v1/home-feed`:
 {
   "screen": "HOME_FEED",
   "version": "1.0",
+  "presetId": "mega-sale",
   "theme": {
-    "primaryColor": "#000000",
-    "accentColor": "#000000",
+    "primaryColor": "#4F46E5",
+    "accentColor": "#FF3366",
     "mode": "LIGHT",
     "logo": {
-      "bgColor": "#1e293b",
-      "iconColor": "#38bdf8",
-      "titleColor": "#f8fafc",
-      "subtitleColor": "#94a3b8"
+      "bgColor": "#4F46E5",
+      "iconColor": "#FFFFFF",
+      "subtitleColor": "#4F46E5"
     }
   },
   "sections": [
@@ -106,7 +110,7 @@ Example payload returned from `/api/v1/home-feed`:
       "items": [
         {
           "id": "banner_mega_sale",
-          "imageUrl": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800",
+          "imageUrl": "https://picsum.photos/id/1060/800/400",
           "action": {
             "type": "NAVIGATE",
             "payload": { "target": "flexifeed://campaign/mega-sale" }
@@ -126,7 +130,7 @@ Example payload returned from `/api/v1/home-feed`:
             "name": "Wireless Bluetooth Earbuds",
             "price": "฿890",
             "originalPrice": "฿1,590",
-            "thumbnailUrl": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300"
+            "thumbnailUrl": "https://picsum.photos/id/1/200/200"
           },
           "action": {
             "type": "NAVIGATE",
@@ -147,11 +151,11 @@ Example payload returned from `/api/v1/home-feed`:
             "name": "RGB Wireless Mechanical Keyboard",
             "price": "฿2,490",
             "rating": 4.8,
-            "thumbnailUrl": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500"
+            "thumbnailUrl": "https://picsum.photos/id/96/300/300"
           },
           "action": {
-            "type": "NAVIGATE",
-            "payload": { "target": "flexifeed://product/201" }
+            "type": "ADD_TO_CART",
+            "payload": { "productId": "201", "quantity": 1 }
           }
         }
       ]
@@ -166,15 +170,33 @@ Example payload returned from `/api/v1/home-feed`:
 
 ```text
 flexifeed-studio/
+├── Makefile                       # Developer command runner (build, test, server)
+├── .github/workflows/ci.yml       # GitHub Actions CI (Android tests/build + TS validation)
 ├── AGENTS.md                      # Agent & Developer Guidelines (TDD/TDG & Architecture Rules)
-├── docs/media/                    # Demo Media Assets (demo.gif)
-├── server/                        # Node.js SDUI Backend & Web Studio
-│   ├── server.js                  # Express API + SSE Stream Controller
-│   ├── data/
-│   │   ├── feed.json              # Active Feed Payload
-│   │   ├── presets/               # Mega Sale, Tech Weekend presets
-│   │   └── screens/               # product_201, campaign screens
-│   └── public/                    # Responsive Studio Backoffice (HTML/CSS/JS)
+├── docs/media/                    # Demo Media Assets (backoffice-demo.gif, demo.gif)
+├── server/                        # Modular TypeScript SDUI Backend & Web Studio
+│   ├── src/
+│   │   ├── types/
+│   │   │   ├── sdui.types.ts      # SDUI Schema contracts (Screen, Theme, Action, Node)
+│   │   │   └── server.types.ts    # HTTP handlers, SSE events, and Preset models
+│   │   ├── config/
+│   │   │   └── constants.ts       # PORT, directory paths, MIME types, CORS headers
+│   │   ├── data/
+│   │   │   ├── defaultScreens.ts  # Fallback screens (product_101, 201, campaigns)
+│   │   │   ├── defaultPresets.ts  # Baseline presets (mega-sale, tech-weekend)
+│   │   │   └── feedStore.ts       # Data layer (feed.json I/O, preset loading, reset)
+│   │   ├── services/
+│   │   │   └── sseService.ts      # Live Hot-Reload SSE connection manager & heartbeat
+│   │   ├── routes/
+│   │   │   ├── apiRoutes.ts       # /api/v1/* endpoints (home-feed, theme, preset, reset)
+│   │   │   └── staticRoutes.ts    # Web Studio static asset server (public/)
+│   │   └── server.ts              # HTTP router dispatcher, lifecycle & startup banners
+│   ├── data/                      # Persistent active feed.json & presets directory
+│   ├── public/                    # Responsive Studio Backoffice (HTML/CSS/JS)
+│   ├── dist/                      # Compiled production JavaScript output
+│   ├── tsconfig.json              # Strict TypeScript compiler configuration
+│   ├── package.json               # Scripts (build, start, serve, dev, typecheck, test)
+│   └── server.js                  # Backward-compatible entrypoint with auto-build
 └── FlexiFeed/                     # Android Application (Jetpack Compose)
     └── app/src/main/java/com/flexifeed/app/
         ├── data/
@@ -196,31 +218,64 @@ flexifeed-studio/
 
 ---
 
+## 🛠️ Makefile Command Runner
+
+FlexiFeed includes a convenient `Makefile` to streamline everyday development workflows:
+
+```bash
+# Display help and available commands
+make help
+```
+
+| Target | Description |
+| :--- | :--- |
+| **`make help`** | Displays the styled help menu with all available targets |
+| **`make test`** | Runs all 28 Android Unit Tests across MVI, DI, and Repositories |
+| **`make build`** | Assembles the Android Dev-Debug APK |
+| **`make install`** | Installs Dev-Debug APK onto a connected device or emulator |
+| **`make launch`** | Launches MainActivity on the connected device via ADB |
+| **`make server-install`** | Installs Node.js server dependencies |
+| **`make server-build`** | Compiles TypeScript SDUI server to `dist/` using `tsc` |
+| **`make server`** | Starts the TypeScript SDUI Server and Web Studio (port 8080) |
+| **`make clean`** | Cleans Gradle and build caches across the monorepo |
+| **`make all`** | Installs server deps, runs unit tests, and builds APK |
+
+---
+
 ## 🚀 Quick Start Guide
 
-### 1. Start Node.js SDUI Server & Web Studio
+### 1. Start TypeScript SDUI Server & Web Studio
+Using `make`:
+```bash
+make server-install
+make server
+```
+
+Or using `npm` directly:
 ```bash
 cd server
 npm install
-node server.js
+npm start        # Runs TypeScript server directly via tsx
+# or: npm run build && npm run serve
 ```
+
 - 🌐 **Web Studio Backoffice**: Open [http://localhost:8080](http://localhost:8080)
 - 📡 **SDUI API Endpoint**: `http://localhost:8080/api/v1/home-feed`
-- ⚡ **Live Stream**: `http://localhost:8080/api/v1/stream`
+- ⚡ **Live SSE Stream**: `http://localhost:8080/api/v1/feed-stream`
+- 📱 **Android Emulator Host**: `http://10.0.2.2:8080/api/v1/home-feed`
 
 ### 2. Run the Android Application
-Open the project in Android Studio or use the Gradle wrapper:
+Open the project in Android Studio or use the Makefile / Gradle wrapper:
 ```bash
-cd FlexiFeed
-
 # Run Unit Tests (28/28 tests passing)
-./gradlew testDevDebugUnitTest
+make test
+# (or: cd FlexiFeed && ./gradlew testDevDebugUnitTest)
 
 # Install dev-debug build onto connected device/emulator
-./gradlew installDevDebug
+make install
 
 # Launch MainActivity
-adb shell am start -n com.flexifeed.app.dev/com.flexifeed.app.MainActivity
+make launch
 ```
 
 ---
@@ -228,15 +283,33 @@ adb shell am start -n com.flexifeed.app.dev/com.flexifeed.app.MainActivity
 ## 🧪 Testing & Verification
 
 FlexiFeed adheres strictly to **Test-Driven Generation & Development (TDG / TDD)**:
-- **Unit Test Execution**:
-  ```bash
-  ./gradlew testDevDebugUnitTest
-  ```
-  **100% Pass Rate (28 of 28 tests)** covering:
-  - `HomeMviTest`: Verifies MVI state hoisting, intent events, and state mutations.
-  - `CartAndDITest`: Tests Cart ViewModel item additions, quantity steppers, and Koin DI.
-  - `SDUIRepositoryTest`: Tests live network fetching and graceful offline mock fallback.
-  - `SDUIActionContractsTest`: Validates SDUI Action payloads, parameters, and type safety.
+
+### 1. Android Unit Tests (28/28 Passing)
+```bash
+make test
+# or: cd FlexiFeed && ./gradlew testDevDebugUnitTest
+```
+**100% Pass Rate (28 of 28 tests)** covering:
+- `HomeMviTest`: Verifies MVI state hoisting, intent events, and state mutations.
+- `CartAndDITest`: Tests Cart ViewModel item additions, quantity steppers, and Koin DI.
+- `SDUIRepositoryTest`: Tests live network fetching and graceful offline mock fallback.
+- `SDUIActionContractsTest`: Validates SDUI Action payloads, parameters, and type safety.
+
+### 2. Backend TypeScript & DSL Verification
+```bash
+cd server
+npm test
+```
+- Validates strict TypeScript compilation (`tsc --noEmit`).
+- Validates JSON DSL schema integrity for active feeds and presets.
+
+---
+
+## 🔄 Continuous Integration (CI)
+
+Every pull request and push to `master` is automatically validated via GitHub Actions (`.github/workflows/ci.yml`):
+- **Android CI:** Runs on JDK 17, executes all 28 unit tests, and compiles the Dev-Debug APK.
+- **Server CI:** Sets up Node.js 22, installs dependencies, typechecks and builds the TypeScript server (`npm run build`), and validates all SDUI JSON DSL definitions.
 
 ---
 
