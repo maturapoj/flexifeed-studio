@@ -4,6 +4,7 @@
 [![Kotlin Version](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2016-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Neon](https://img.shields.io/badge/Neon-Serverless%20Postgres-00E599?logo=neon&logoColor=black)](https://neon.tech)
 [![Drizzle ORM](https://img.shields.io/badge/ORM-Drizzle%20ORM-C5F74F?logo=drizzle&logoColor=black)](https://orm.drizzle.team)
 [![Android Min SDK](https://img.shields.io/badge/Min%20SDK-26-34A853?logo=android&logoColor=white)](https://developer.android.com)
 [![Target SDK](https://img.shields.io/badge/Target%20SDK-34-4285F4?logo=android&logoColor=white)](https://developer.android.com)
@@ -172,9 +173,12 @@ Example payload returned from `/api/v1/home-feed`:
 
 ```text
 flexifeed-studio/
-├── Makefile                       # Developer command runner (build, test, server)
-├── .github/workflows/ci.yml       # GitHub Actions CI (Android tests/build + TS validation)
+├── Makefile                       # Developer command runner (build, test, server, db)
+├── .github/workflows/ci.yml       # GitHub Actions CI (master & develop multi-stage workflow)
 ├── AGENTS.md                      # Agent & Developer Guidelines (TDD/TDG & Architecture Rules)
+├── neon.ts                        # Neon Cloud Serverless PostgreSQL configuration
+├── render.yaml                    # Render.com Cloud Blueprint deployment specification
+├── docker-compose.yml             # Local PostgreSQL 16 container definition
 ├── docs/media/                    # Demo Media Assets (backoffice-demo.gif, demo.gif)
 ├── server/                        # Modular TypeScript SDUI Backend & Web Studio
 │   ├── src/
@@ -183,10 +187,14 @@ flexifeed-studio/
 │   │   │   └── server.types.ts    # HTTP handlers, SSE events, and Preset models
 │   │   ├── config/
 │   │   │   └── constants.ts       # PORT, directory paths, MIME types, CORS headers
+│   │   ├── db/
+│   │   │   ├── schema.ts          # Drizzle ORM PostgreSQL schema (screens, presets, settings)
+│   │   │   ├── index.ts           # Neon & node-postgres client pool connection manager
+│   │   │   └── seed.ts            # Database seeder for baseline presets & fallback screens
 │   │   ├── data/
 │   │   │   ├── defaultScreens.ts  # Fallback screens (product_101, 201, campaigns)
-│   │   │   ├── defaultPresets.ts  # Baseline presets (mega-sale, tech-weekend)
-│   │   │   └── feedStore.ts       # Data layer (feed.json I/O, preset loading, reset)
+│   │   │   ├── defaultPresets.ts  # Baseline presets with full logo theming
+│   │   │   └── feedStore.ts       # Hybrid Data layer (PostgreSQL + local JSON fallback)
 │   │   ├── services/
 │   │   │   └── sseService.ts      # Live Hot-Reload SSE connection manager & heartbeat
 │   │   ├── routes/
@@ -194,11 +202,10 @@ flexifeed-studio/
 │   │   │   └── staticRoutes.ts    # Web Studio static asset server (public/)
 │   │   └── server.ts              # HTTP router dispatcher, lifecycle & startup banners
 │   ├── data/                      # Persistent active feed.json & presets directory
-│   ├── public/                    # Responsive Studio Backoffice (HTML/CSS/JS)
+│   ├── public/                    # Responsive Studio Backoffice with live theme & logo controls
 │   ├── dist/                      # Compiled production JavaScript output
 │   ├── tsconfig.json              # Strict TypeScript compiler configuration
-│   ├── package.json               # Scripts (build, start, serve, dev, typecheck, test)
-│   └── server.js                  # Backward-compatible entrypoint with auto-build
+│   └── package.json               # Scripts (build, start, serve, dev, typecheck, test, db:*)
 └── FlexiFeed/                     # Android Application (Jetpack Compose)
     └── app/src/main/java/com/flexifeed/app/
         ├── data/
@@ -309,9 +316,17 @@ npm test
 
 ## 🔄 Continuous Integration (CI)
 
-Every pull request and push to `master` is automatically validated via GitHub Actions (`.github/workflows/ci.yml`):
-- **Android CI:** Runs on JDK 17, executes all 28 unit tests, and compiles the Dev-Debug APK.
-- **Server CI:** Sets up Node.js 22, installs dependencies, typechecks and builds the TypeScript server (`npm run build`), and validates all SDUI JSON DSL definitions.
+Every pull request and push to `master` and `develop` is automatically validated via GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+- **Android CI:** Runs on JDK 17 with Gradle action caching, executes all 28 unit tests (`testDevDebugUnitTest`), compiles the Dev-Debug APK (`assembleDevDebug`), and uploads artifacts for test reports and binaries.
+- **Server CI:** Sets up Node.js 22, installs dependencies (`npm ci`), performs strict TypeScript compilation and type checks (`npm run build` & `npm run typecheck`), and validates SDUI JSON DSL schema integrity and logo theme completeness.
+
+---
+
+## 🌿 Git Branching Strategy
+
+FlexiFeed Studio maintains a streamlined branching strategy to guarantee stability:
+- **`master`**: Production-ready branch. Code here is tested, stable, and ready for deployment.
+- **`develop`**: Active integration and development branch. All feature work, bug fixes, and development pull requests are committed and verified on `develop` before merging into `master`.
 
 ---
 
@@ -365,13 +380,26 @@ make db-studio
 ## ☁️ Cloud Deployment (Free Tier: Neon.tech + Render.com)
 
 ### 1. Database on Neon.tech (Free Serverless PostgreSQL)
-1. Create a free account at [neon.tech](https://neon.tech) and create a project (e.g. `flexifeed`).
-2. Copy the connection string provided in the Neon dashboard:
+1. Create a free account at [neon.tech](https://neon.tech) and create a serverless PostgreSQL database.
+2. Link your local environment using the Neon CLI:
    ```bash
-   DATABASE_URL="postgresql://<user>:<password>@<neon-hostname>.neon.tech/flexifeed?sslmode=require"
+   # Install Neon CLI & log in
+   npm i -g neon@latest && neon login
+
+   # Link to your Neon project branch
+   neon link --project-id <your-project-id> --branch production -y
+
+   # Deploy configuration
+   neon deploy
    ```
-3. Add this string to your `server/.env` file.
-4. Run `npm run db:push && npm run db:seed` to initialize the database in the cloud!
+3. Set your connection string in `server/.env`:
+   ```bash
+   DATABASE_URL="postgresql://<user>:<password>@<neon-endpoint>.neon.tech/neondb?sslmode=require"
+   ```
+4. Push schema and seed SDUI data directly to the cloud:
+   ```bash
+   cd server && npm run db:push && npm run db:seed
+   ```
 
 ### 2. Server on Render.com (Free Web Service with SSE)
 The repository includes a [render.yaml](render.yaml) blueprint for 1-click deployment:
