@@ -10,7 +10,7 @@
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsc --noEmit && node -e \"const fs = require('fs'); JSON.parse(fs.readFileSync('data/feed.json')); console.log('\u2714 feed.json is valid!');\"",
-    "db:push": "drizzle-kit push",
+    "db:push": "drizzle-kit push --force",
     "db:seed": "tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio"
   },
