@@ -1,17 +1,20 @@
 {
-  "theme": {
-    "logo": {
-      "bgColor": "#4F46E5",
-      "iconColor": "#FFFFFF",
-      "subtitleColor": "#4F46E5"
-    },
-    "mode": "LIGHT",
-    "accentColor": "#FF3366",
-    "primaryColor": "#4F46E5"
-  },
   "screen": "HOME_FEED",
   "version": "1.0",
   "presetId": "mega-sale",
+  "theme": {
+    "primaryColor": "#10B981",
+    "accentColor": "#F59E0B",
+    "mode": "LIGHT",
+    "logo": {
+      "bgColor": "#10B981",
+      "iconColor": "#FFFFFF",
+      "subtitleColor": "#10B981"
+    },
+    "logoBgColor": "#10B981",
+    "logoIconColor": "#FFFFFF",
+    "logoSubtitleColor": "#10B981"
+  },
   "sections": [
     {
       "id": "sec_carousel_01",
