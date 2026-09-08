@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, develop ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -75,26 +75,32 @@ jobs:
       - name: Install dependencies
         run: |
           cd server
-          npm install
+          npm ci || npm install
 
       - name: TypeScript Build & Type Check
         run: |
           cd server
           npm run build
+          npm run typecheck
 
       - name: Validate SDUI JSON DSL & Presets
         run: |
+          cd server
+          npm test
           node -e "
             const fs = require('fs');
             const path = require('path');
-            const dir = 'server/data';
+            const dir = 'data';
             const files = ['feed.json', 'presets/mega-sale.json', 'presets/tech-weekend.json'];
             files.forEach(f => {
               const fullPath = path.join(dir, f);
               const data = JSON.parse(fs.readFileSync(fullPath, 'utf-8'));
-              if (!data.screen || !data.sections) {
+              if (!data.screen || !data.sections || !Array.isArray(data.sections)) {
                 throw new Error(`Invalid SDUI DSL schema in ${f}`);
               }
-              console.log(`✔ Valid SDUI DSL: ${f} (sections: ${data.sections.length})`);
+              if (!data.theme || !data.theme.primaryColor || !data.theme.logo) {
+                throw new Error(`Missing theme or logo object in ${f}`);
+              }
+              console.log(`✔ Valid SDUI DSL & Theme: ${f} (${data.sections.length} sections, logoBg: ${data.theme.logo.bgColor})`);
             });
           "

@@ -9,7 +9,7 @@
     "serve": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit && node -e \"const fs = require('fs'); JSON.parse(fs.readFileSync('data/feed.json')); console.log('\u2714 feed.json is valid!');\"",
+    "test": "tsc --noEmit && node -e \"const fs = require('fs'); ['data/feed.json', 'data/presets/mega-sale.json', 'data/presets/tech-weekend.json'].forEach(f => { const d = JSON.parse(fs.readFileSync(f, 'utf8')); if (!d.screen || !d.sections) throw new Error('Invalid DSL: ' + f); }); console.log('✔ All SDUI DSL files & presets valid!');\"",
     "db:push": "drizzle-kit push --force",
     "db:seed": "tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio"

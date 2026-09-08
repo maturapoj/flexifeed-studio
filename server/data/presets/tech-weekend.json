@@ -2,9 +2,17 @@
   "screen": "HOME_FEED",
   "version": "1.2",
   "theme": {
-    "primaryColor": "#ffffff",
-    "accentColor": "#f97316",
-    "mode": "LIGHT"
+    "primaryColor": "#0EA5E9",
+    "accentColor": "#F97316",
+    "mode": "LIGHT",
+    "logo": {
+      "bgColor": "#0EA5E9",
+      "iconColor": "#FFFFFF",
+      "subtitleColor": "#0EA5E9"
+    },
+    "logoBgColor": "#0EA5E9",
+    "logoIconColor": "#FFFFFF",
+    "logoSubtitleColor": "#0EA5E9"
   },
   "sections": [
     {
