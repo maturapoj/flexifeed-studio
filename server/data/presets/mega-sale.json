@@ -1,19 +1,63 @@
 {
+  "theme": {
+    "primaryColor": "#10B981",
+    "accentColor": "#F59E0B",
+    "mode": "LIGHT",
+    "logo": {
+      "bgColor": "#10B981",
+      "iconColor": "#FFFFFF",
+      "subtitleColor": "#10B981"
+    },
+    "logoBgColor": "#10B981",
+    "logoIconColor": "#FFFFFF",
+    "logoSubtitleColor": "#10B981"
+  },
   "screen": "HOME_FEED",
   "version": "1.0",
-  "theme": {
-    "primaryColor": "#000000",
-    "accentColor": "#000000",
-    "mode": "LIGHT"
-  },
+  "presetId": "mega-sale",
   "sections": [
+    {
+      "id": "sec_carousel_01",
+      "type": "CAROUSEL",
+      "items": [
+        {
+          "id": "banner_mega_sale",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/mega-sale"
+            }
+          },
+          "imageUrl": "https://picsum.photos/id/1060/800/400"
+        },
+        {
+          "id": "banner_gadget_expo",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/gadget-expo"
+            }
+          },
+          "imageUrl": "https://picsum.photos/id/201/800/400"
+        },
+        {
+          "id": "banner_super_brand_day",
+          "action": {
+            "type": "NAVIGATE",
+            "payload": {
+              "target": "flexifeed://campaign/super-brand-day"
+            }
+          },
+          "imageUrl": "https://picsum.photos/id/180/800/400"
+        }
+      ],
+      "props": {
+        "autoScrollInterval": 4000
+      }
+    },
     {
       "id": "sec_flash_sale_02",
       "type": "HORIZONTAL_LIST",
-      "props": {
-        "title": "⚡ Flash Sale",
-        "countdownRemainingSec": 7200
-      },
       "items": [
         {
           "id": "prod_101",
@@ -21,8 +65,8 @@
           "props": {
             "name": "หูฟังบลูทูธไร้สาย",
             "price": "฿890",
-            "originalPrice": "฿1,590",
-            "thumbnailUrl": "https://picsum.photos/id/1/200/200"
+            "thumbnailUrl": "https://picsum.photos/id/1/200/200",
+            "originalPrice": "฿1,590"
           },
           "action": {
             "type": "NAVIGATE",
@@ -37,8 +81,8 @@
           "props": {
             "name": "สมาร์ตวอทช์ Ultra Fit",
             "price": "฿1,290",
-            "originalPrice": "฿2,990",
-            "thumbnailUrl": "https://picsum.photos/id/250/200/200"
+            "thumbnailUrl": "https://picsum.photos/id/250/200/200",
+            "originalPrice": "฿2,990"
           },
           "action": {
             "type": "NAVIGATE",
@@ -53,8 +97,8 @@
           "props": {
             "name": "พาวเวอร์แบงค์ 20000mAh",
             "price": "฿499",
-            "originalPrice": "฿990",
-            "thumbnailUrl": "https://picsum.photos/id/367/200/200"
+            "thumbnailUrl": "https://picsum.photos/id/367/200/200",
+            "originalPrice": "฿990"
           },
           "action": {
             "type": "NAVIGATE",
@@ -63,14 +107,15 @@
             }
           }
         }
-      ]
+      ],
+      "props": {
+        "title": "⚡ Flash Sale",
+        "countdownRemainingSec": 7200
+      }
     },
     {
       "id": "sec_grid_products_03",
       "type": "GRID_2X2",
-      "props": {
-        "title": "สินค้าแนะนำสำหรับคุณ"
-      },
       "items": [
         {
           "id": "prod_201",
@@ -82,9 +127,10 @@
             "thumbnailUrl": "https://picsum.photos/id/96/300/300"
           },
           "action": {
-            "type": "NAVIGATE",
+            "type": "ADD_TO_CART",
             "payload": {
-              "target": "flexifeed://product/201"
+              "quantity": 1,
+              "productId": "201"
             }
           }
         },
@@ -100,8 +146,8 @@
           "action": {
             "type": "ADD_TO_CART",
             "payload": {
-              "productId": "202",
-              "quantity": 1
+              "quantity": 1,
+              "productId": "202"
             }
           }
         },
@@ -117,8 +163,8 @@
           "action": {
             "type": "ADD_TO_CART",
             "payload": {
-              "productId": "203",
-              "quantity": 1
+              "quantity": 1,
+              "productId": "203"
             }
           }
         },
@@ -134,55 +180,15 @@
           "action": {
             "type": "ADD_TO_CART",
             "payload": {
-              "productId": "204",
-              "quantity": 1
+              "quantity": 1,
+              "productId": "204"
             }
           }
         }
-      ]
-    },
-    {
-      "id": "sec_carousel_01",
-      "type": "CAROUSEL",
+      ],
       "props": {
-        "autoScrollInterval": 4000
-      },
-      "items": [
-        {
-          "id": "banner_mega_sale",
-          "imageUrl": "https://picsum.photos/id/1060/800/400",
-          "action": {
-            "type": "NAVIGATE",
-            "payload": {
-              "target": "flexifeed://campaign/mega-sale"
-            }
-          },
-          "props": {}
-        },
-        {
-          "id": "banner_gadget_expo",
-          "imageUrl": "https://picsum.photos/id/201/800/400",
-          "action": {
-            "type": "NAVIGATE",
-            "payload": {
-              "target": "flexifeed://campaign/gadget-expo"
-            }
-          },
-          "props": {}
-        },
-        {
-          "id": "banner_super_brand_day",
-          "imageUrl": "https://picsum.photos/id/180/800/400",
-          "action": {
-            "type": "NAVIGATE",
-            "payload": {
-              "target": "flexifeed://campaign/super-brand-day"
-            }
-          },
-          "props": {}
-        }
-      ]
+        "title": "สินค้าแนะนำสำหรับคุณ"
+      }
     }
-  ],
-  "presetId": "mega-sale"
+  ]
 }

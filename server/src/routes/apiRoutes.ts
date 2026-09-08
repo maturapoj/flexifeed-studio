@@ -99,10 +99,25 @@ export async function handleApiRoutes(req: IncomingMessage, res: ServerResponse,
       const activePreset = themeData.presetId || currentFeed.presetId || (currentFeed.version === "1.2" ? "tech-weekend" : "mega-sale");
 
       currentFeed.presetId = activePreset;
+
+      const logoTheme = themeData.logo || currentFeed.theme?.logo || {
+        bgColor: themeData.logoBgColor || currentFeed.theme?.logoBgColor || themeData.primaryColor || "#4F46E5",
+        iconColor: themeData.logoIconColor || currentFeed.theme?.logoIconColor || "#FFFFFF",
+        subtitleColor: themeData.logoSubtitleColor || currentFeed.theme?.logoSubtitleColor || themeData.primaryColor || "#4F46E5"
+      };
+
       currentFeed.theme = {
         primaryColor: themeData.primaryColor || currentFeed.theme?.primaryColor || "#4F46E5",
         accentColor: themeData.accentColor || currentFeed.theme?.accentColor || "#FF3366",
-        mode: themeData.mode || currentFeed.theme?.mode || "LIGHT"
+        mode: themeData.mode || currentFeed.theme?.mode || "LIGHT",
+        logo: {
+          bgColor: logoTheme.bgColor || themeData.logoBgColor || currentFeed.theme?.logo?.bgColor || themeData.primaryColor || "#4F46E5",
+          iconColor: logoTheme.iconColor || themeData.logoIconColor || currentFeed.theme?.logo?.iconColor || "#FFFFFF",
+          subtitleColor: logoTheme.subtitleColor || themeData.logoSubtitleColor || currentFeed.theme?.logo?.subtitleColor || themeData.primaryColor || "#4F46E5"
+        },
+        logoBgColor: logoTheme.bgColor || themeData.logoBgColor || currentFeed.theme?.logoBgColor,
+        logoIconColor: logoTheme.iconColor || themeData.logoIconColor || currentFeed.theme?.logoIconColor,
+        logoSubtitleColor: logoTheme.subtitleColor || themeData.logoSubtitleColor || currentFeed.theme?.logoSubtitleColor
       };
       await writeCurrentFeed(currentFeed);
 
@@ -142,6 +157,10 @@ export async function handleApiRoutes(req: IncomingMessage, res: ServerResponse,
       }
       const activePreset = parsed.presetId || (parsed.version === "1.2" ? "tech-weekend" : "mega-sale");
       parsed.presetId = activePreset;
+      const existingFeed = readCurrentFeed();
+      if (parsed.theme && !parsed.theme.logo && existingFeed.theme?.logo) {
+        parsed.theme.logo = existingFeed.theme.logo;
+      }
       await writeCurrentFeed(parsed);
       await savePreset(activePreset, parsed);
 
