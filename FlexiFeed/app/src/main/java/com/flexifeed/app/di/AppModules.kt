@@ -13,6 +13,8 @@ import com.flexifeed.app.ui.home.HomeViewModel
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import com.google.firebase.analytics.FirebaseAnalytics
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -65,7 +67,14 @@ val repositoryModule = module {
 }
 
 val domainModule = module {
-    single { AnalyticsTracker() }
+    single {
+        val firebaseAnalytics = try {
+            FirebaseAnalytics.getInstance(androidContext())
+        } catch (_: Throwable) {
+            null
+        }
+        AnalyticsTracker(firebaseAnalytics)
+    }
 }
 
 val viewModelModule = module {
