@@ -283,6 +283,11 @@ function applyThemeToPreview(theme) {
   if (logoBox) {
     logoBox.style.background = logoBg;
     logoBox.style.color = logoIcon;
+    const svg = logoBox.querySelector('svg');
+    if (svg) {
+      svg.style.fill = logoIcon;
+      svg.style.color = logoIcon;
+    }
   }
 
   const cartBadge = document.getElementById('mock-cart-badge');
@@ -1011,7 +1016,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selMode.addEventListener('change', onThemeColorChanged);
   }
 
-  document.querySelectorAll('.palette-btn').forEach(pBtn => {
+  document.querySelectorAll('.palette-btn:not(.logo-preset-btn)').forEach(pBtn => {
     pBtn.addEventListener('click', async () => {
       const primary = pBtn.dataset.primary;
       const accent = pBtn.dataset.accent;
@@ -1021,6 +1026,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (inAccent) inAccent.value = accent;
       if (txtAccent) txtAccent.value = accent;
       if (selMode) selMode.value = mode;
+      // Also sync brand logo colors to match selected theme palette
+      if (inLogoBg) inLogoBg.value = primary;
+      if (txtLogoBg) txtLogoBg.value = primary;
+      if (inLogoSub) inLogoSub.value = primary;
+      if (txtLogoSub) txtLogoSub.value = primary;
       onThemeColorChanged();
       await saveThemeToServer();
     });
