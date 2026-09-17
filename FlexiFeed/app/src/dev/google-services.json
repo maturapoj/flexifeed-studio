@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "608239078769",
+    "project_id": "flexifeed-studio",
+    "storage_bucket": "flexifeed-studio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608239078769:android:cc36d2e4ef8726895ebad0",
+        "android_client_info": {
+          "package_name": "com.flexifeed.app.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1GkYNdHH08nxiZ5ONladenE8kg-2VLM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

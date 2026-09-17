@@ -1,6 +1,8 @@
 package com.flexifeed.app.domain.action
 
+import android.os.Bundle
 import android.util.Log
+import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +16,9 @@ data class AnalyticsEvent(
     val timestamp: String = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date())
 )
 
-class AnalyticsTracker {
+class AnalyticsTracker(
+    private val firebaseAnalytics: FirebaseAnalytics? = null
+) {
     private val tag = "SDUIAnalytics"
     private val _events = MutableStateFlow<List<AnalyticsEvent>>(emptyList())
     val events: StateFlow<List<AnalyticsEvent>> = _events.asStateFlow()
@@ -26,6 +30,31 @@ class AnalyticsTracker {
         } catch (e: Throwable) {
             println("[$tag] Event logged: '$eventName' with params: $parameters")
         }
+
+        try {
+            firebaseAnalytics?.let { fa ->
+                val bundle = Bundle()
+                parameters.forEach { (key, value) ->
+                    when (value) {
+                        is String -> bundle.putString(key, value)
+                        is Int -> bundle.putInt(key, value)
+                        is Long -> bundle.putLong(key, value)
+                        is Double -> bundle.putDouble(key, value)
+                        is Float -> bundle.putFloat(key, value)
+                        is Boolean -> bundle.putBoolean(key, value)
+                        else -> bundle.putString(key, value?.toString() ?: "")
+                    }
+                }
+                fa.logEvent(eventName, bundle)
+            }
+        } catch (t: Throwable) {
+            try {
+                Log.w(tag, "Failed to log event to Firebase: ${t.message}")
+            } catch (_: Throwable) {
+                // Ignore in headless test runner
+            }
+        }
+
         _events.value = listOf(event) + _events.value.take(49)
     }
 
