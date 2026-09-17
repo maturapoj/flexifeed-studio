@@ -3,15 +3,15 @@
   "version": "1.0",
   "presetId": "mega-sale",
   "theme": {
-    "primaryColor": "#10B981",
-    "accentColor": "#F59E0B",
-    "mode": "LIGHT",
     "logo": {
       "bgColor": "#10B981",
       "iconColor": "#FFFFFF",
       "subtitleColor": "#10B981"
     },
+    "mode": "LIGHT",
+    "accentColor": "#F59E0B",
     "logoBgColor": "#10B981",
+    "primaryColor": "#10B981",
     "logoIconColor": "#FFFFFF",
     "logoSubtitleColor": "#10B981"
   },
