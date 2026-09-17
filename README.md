@@ -10,6 +10,7 @@
 [![Target SDK](https://img.shields.io/badge/Target%20SDK-34-4285F4?logo=android&logoColor=white)](https://developer.android.com)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20BOM-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![Node.js](https://img.shields.io/badge/Server-Node.js%20TypeScript-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![Render](https://img.shields.io/badge/Render-Live%20Demo-46E3B7?logo=render&logoColor=black)](https://flexifeed-studio.onrender.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **FlexiFeed Studio** is an end-to-end **Server-Driven UI (SDUI)** platform for modern e-commerce experiences. It combines a high-performance **Android client built with Jetpack Compose** and a **Modular TypeScript SDUI Server & Web Studio Backoffice** connected via real-time Server-Sent Events (SSE). 
@@ -268,10 +269,10 @@ npm start        # Runs TypeScript server directly via tsx
 # or: npm run build && npm run serve
 ```
 
-- 🌐 **Web Studio Backoffice**: Open [http://localhost:8080](http://localhost:8080)
-- 📡 **SDUI API Endpoint**: `http://localhost:8080/api/v1/home-feed`
-- ⚡ **Live SSE Stream**: `http://localhost:8080/api/v1/feed-stream`
-- 📱 **Android Emulator Host**: `http://10.0.2.2:8080/api/v1/home-feed`
+- 🌐 **Web Studio Backoffice**: [https://flexifeed-studio.onrender.com](https://flexifeed-studio.onrender.com) *(Local: [http://localhost:8080](http://localhost:8080))*
+- 📡 **SDUI API Endpoint**: `https://flexifeed-studio.onrender.com/api/v1/home-feed` *(Local: `http://localhost:8080/api/v1/home-feed`)*
+- ⚡ **Live SSE Stream**: `https://flexifeed-studio.onrender.com/api/v1/feed-stream` *(Local: `http://localhost:8080/api/v1/feed-stream`)*
+- 📱 **Android Emulator Host**: `http://10.0.2.2:8080/api/v1/home-feed` *(Or point directly to live Render domain)*
 
 ### 2. Run the Android Application
 Open the project in Android Studio or use the Makefile / Gradle wrapper:
@@ -402,14 +403,28 @@ make db-studio
    ```
 
 ### 2. Server on Render.com (Free Web Service with SSE)
-The repository includes a [render.yaml](render.yaml) blueprint for 1-click deployment:
+The server is actively deployed at:
+- **Web Studio & Backoffice GUI:** [https://flexifeed-studio.onrender.com](https://flexifeed-studio.onrender.com)
+- **SDUI Home Feed API:** [`https://flexifeed-studio.onrender.com/api/v1/home-feed`](https://flexifeed-studio.onrender.com/api/v1/home-feed)
+- **Real-Time Live SSE Stream:** [`https://flexifeed-studio.onrender.com/api/v1/feed-stream`](https://flexifeed-studio.onrender.com/api/v1/feed-stream)
+
+The repository includes a [render.yaml](render.yaml) blueprint for 1-click deployment or manual web service setup:
 1. Push your repository to GitHub.
-2. Log into [render.com](https://render.com) and click **New > Blueprint**.
-3. Select this repository. Render will automatically configure:
-   - **Build Command:** `cd server && npm install && npm run build`
-   - **Start Command:** `cd server && npm run serve`
-4. Set the `DATABASE_URL` environment variable to your Neon.tech connection string in the Render service settings.
-5. Your SDUI Server & Web Studio will be live on `https://<your-app>.onrender.com`!
+2. In [render.com](https://render.com), create a **New > Web Service** (or **New > Blueprint**).
+3. Connect `flexifeed-studio`. Configuration settings:
+   - **Root Directory:** `server`
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `npm run serve`
+   - **Plan:** Free
+4. Set the `DATABASE_URL` environment variable to your Neon.tech connection string in Render service settings.
+5. Auto-deploy triggers automatically whenever commits are merged into `master`.
+
+### 3. Connecting Android Client to Live Cloud Backend
+To point your Android application directly to the live Render deployment instead of the local emulator loopback:
+In [FlexiFeed/app/build.gradle.kts](FlexiFeed/app/build.gradle.kts):
+```kotlin
+buildConfigField("String", "SDUI_BASE_URL", "\"https://flexifeed-studio.onrender.com/\"")
+```
 
 ## 📄 License
 
