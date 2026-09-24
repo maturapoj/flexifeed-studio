@@ -26,6 +26,7 @@ import com.flexifeed.app.domain.model.SDUIConstants
 import com.flexifeed.app.domain.model.SDUINode
 import com.flexifeed.app.domain.model.SDUIScreen
 import com.flexifeed.app.ui.home.components.CampaignSwitcherBar
+import com.flexifeed.app.ui.home.components.DebugNetworkChecker
 import com.flexifeed.app.ui.home.components.HomeFeedContent
 import com.flexifeed.app.ui.home.components.HomeSearchBar
 import com.flexifeed.app.ui.home.components.HomeTopAppBar
@@ -148,6 +149,9 @@ fun HomeScreenContent(
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
+            // Debug-only device connectivity + configured base URL checker
+            DebugNetworkChecker()
+
             // SDUI Campaign Selector Strip
             CampaignSwitcherBar(
                 currentCampaign = uiState.currentCampaign,

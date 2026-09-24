@@ -6,15 +6,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
-data class AnalyticsEvent(
-    val eventName: String,
-    val parameters: Map<String, Any?>,
-    val timestamp: String = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date())
-)
 
 class AnalyticsTracker(
     private val firebaseAnalytics: FirebaseAnalytics? = null
@@ -25,11 +16,7 @@ class AnalyticsTracker(
 
     fun logEvent(eventName: String, parameters: Map<String, Any?> = emptyMap()) {
         val event = AnalyticsEvent(eventName, parameters)
-        try {
-            Log.d(tag, "Event logged: '$eventName' with params: $parameters")
-        } catch (e: Throwable) {
-            println("[$tag] Event logged: '$eventName' with params: $parameters")
-        }
+        safeLog { Log.d(tag, "Event logged: '$eventName' with params: $parameters") }
 
         try {
             firebaseAnalytics?.let { fa ->
@@ -48,11 +35,7 @@ class AnalyticsTracker(
                 fa.logEvent(eventName, bundle)
             }
         } catch (t: Throwable) {
-            try {
-                Log.w(tag, "Failed to log event to Firebase: ${t.message}")
-            } catch (_: Throwable) {
-                // Ignore in headless test runner
-            }
+            safeLog { Log.w(tag, "Failed to log event to Firebase: ${t.message}") }
         }
 
         _events.value = listOf(event) + _events.value.take(49)
@@ -60,5 +43,13 @@ class AnalyticsTracker(
 
     fun clearEvents() {
         _events.value = emptyList()
+    }
+
+    private inline fun safeLog(block: () -> Unit) {
+        try {
+            block()
+        } catch (_: Throwable) {
+            // android.util.Log is unmocked in the headless test runner; ignore.
+        }
     }
 }

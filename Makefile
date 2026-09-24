@@ -11,7 +11,7 @@ GREEN  := \033[32m
 YELLOW := \033[33m
 RESET  := \033[0m
 
-.PHONY: help test build install launch server server-install server-build db-up db-down db-push db-seed db-studio clean all
+.PHONY: help test build install launch test-local build-local install-local launch-local server server-install server-build db-up db-down db-push db-seed db-studio clean all
 
 ##@ Documentation
 help: ## Display this help message with available commands
@@ -38,6 +38,22 @@ install: ## Install Dev-Debug APK onto connected emulator or device
 launch: ## Launch FlexiFeed application on connected device via ADB
 	@echo "$(CYAN)Launching MainActivity on device...$(RESET)"
 	@adb shell am start -n com.flexifeed.app.dev/com.flexifeed.app.MainActivity
+
+test-local: ## Run Android Unit Tests against the Local flavor (points at local server)
+	@echo "$(CYAN)Running Android Unit Tests (Local)...$(RESET)"
+	@cd FlexiFeed && ./gradlew testLocalDebugUnitTest
+
+build-local: ## Assemble Android Local-Debug APK (SDUI_BASE_URL: http://10.0.2.2:8080/)
+	@echo "$(CYAN)Building Local-Debug APK...$(RESET)"
+	@cd FlexiFeed && ./gradlew assembleLocalDebug
+
+install-local: ## Install Local-Debug APK onto connected emulator (requires `make server` running)
+	@echo "$(CYAN)Installing Local-Debug APK on device...$(RESET)"
+	@cd FlexiFeed && ./gradlew installLocalDebug
+
+launch-local: ## Launch FlexiFeed (Local variant) on connected device via ADB
+	@echo "$(CYAN)Launching MainActivity on device (Local)...$(RESET)"
+	@adb shell am start -n com.flexifeed.app.local/com.flexifeed.app.MainActivity
 
 ##@ Node.js Server & Web Studio
 server-install: ## Install Node.js server dependencies

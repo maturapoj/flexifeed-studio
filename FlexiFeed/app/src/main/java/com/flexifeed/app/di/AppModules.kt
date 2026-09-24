@@ -10,6 +10,7 @@ import com.flexifeed.app.domain.repository.SDUIRepository
 import com.flexifeed.app.domain.repository.SDUIStreamService
 import com.flexifeed.app.ui.home.CartViewModel
 import com.flexifeed.app.ui.home.HomeViewModel
+import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -32,6 +33,7 @@ val networkModule = module {
             .connectTimeout(3000, TimeUnit.MILLISECONDS)
             .readTimeout(3000, TimeUnit.MILLISECONDS)
             .addInterceptor(logging)
+            .addInterceptor(ChuckerInterceptor.Builder(androidContext()).build())
             .build()
     }
 

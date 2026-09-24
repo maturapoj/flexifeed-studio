@@ -27,13 +27,21 @@ android {
 
     flavorDimensions += listOf("environment")
     productFlavors {
+        create("local") {
+            dimension = "environment"
+            applicationIdSuffix = ".local"
+            versionNameSuffix = "-local"
+            resValue("string", "app_name", "FlexiFeed Local")
+            buildConfigField("String", "ENVIRONMENT", "\"LOCAL\"")
+            buildConfigField("String", "SDUI_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        }
         create("dev") {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
             resValue("string", "app_name", "FlexiFeed Dev")
             buildConfigField("String", "ENVIRONMENT", "\"DEV\"")
-            buildConfigField("String", "SDUI_BASE_URL", "\"http://10.0.2.2:8080/\"")
+            buildConfigField("String", "SDUI_BASE_URL", "\"https://flexifeed-studio.onrender.com/\"")
         }
         create("sit") {
             dimension = "environment"
@@ -101,6 +109,11 @@ dependencies {
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
+
+    // Chucker: in-app HTTP inspector for debugging network connectivity issues.
+    // Release builds link the no-op artifact so the interceptor becomes a passthrough.
+    debugImplementation(libs.chucker)
+    releaseImplementation(libs.chucker.noop)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
