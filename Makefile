@@ -11,7 +11,7 @@ GREEN  := \033[32m
 YELLOW := \033[33m
 RESET  := \033[0m
 
-.PHONY: help test build install launch test-local build-local install-local launch-local server server-install server-build db-up db-down db-push db-seed db-studio clean all
+.PHONY: help test build install launch test-local build-local install-local launch-local ios-open ios-build server server-install server-build db-up db-down db-push db-seed db-studio clean all
 
 ##@ Documentation
 help: ## Display this help message with available commands
@@ -54,6 +54,15 @@ install-local: ## Install Local-Debug APK onto connected emulator (requires `mak
 launch-local: ## Launch FlexiFeed (Local variant) on connected device via ADB
 	@echo "$(CYAN)Launching MainActivity on device (Local)...$(RESET)"
 	@adb shell am start -n com.flexifeed.app.local/com.flexifeed.app.MainActivity
+
+##@ iOS Development
+ios-open: ## Open native iOS Xcode project (Zero CocoaPods)
+	@echo "$(CYAN)Opening Xcode project...$(RESET)"
+	@open FlexiFeed/iosApp/iosApp.xcodeproj
+
+ios-build: ## Build iOS app for Simulator (Dev scheme)
+	@echo "$(CYAN)Building iOS app for Simulator...$(RESET)"
+	@cd FlexiFeed/iosApp && ./build_ios.sh
 
 ##@ Node.js Server & Web Studio
 server-install: ## Install Node.js server dependencies
