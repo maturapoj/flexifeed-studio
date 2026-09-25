@@ -1,21 +1,22 @@
-# 🛒 FlexiFeed Studio: Server-Driven UI E-Commerce Platform
+# 🛒 FlexiFeed Studio: Cross-Platform Server-Driven UI (KMP & CMP)
 
 [![CI](https://github.com/maturapoj/flexifeed-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/maturapoj/flexifeed-studio/actions/workflows/ci.yml)
-[![Kotlin Version](https://img.shields.io/badge/Kotlin-2.0+-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Kotlin Multiplatform](https://img.shields.io/badge/Kotlin-Multiplatform%202.0+-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/docs/multiplatform.html)
+[![Compose Multiplatform](https://img.shields.io/badge/UI-Compose%20Multiplatform-4285F4?logo=jetpackcompose&logoColor=white)](https://www.jetbrains.com/lp/compose-multiplatform/)
+[![iOS](https://img.shields.io/badge/iOS-15+-000000?logo=apple&logoColor=white)](https://developer.apple.com/ios/)
+[![Swift](https://img.shields.io/badge/Swift-5.9+-FA7343?logo=swift&logoColor=white)](https://developer.apple.com/swift/)
+[![Android Min SDK](https://img.shields.io/badge/Android%20Min%20SDK-26-34A853?logo=android&logoColor=white)](https://developer.android.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL%2016-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Neon](https://img.shields.io/badge/Neon-Serverless%20Postgres-00E599?logo=neon&logoColor=black)](https://neon.tech)
 [![Drizzle ORM](https://img.shields.io/badge/ORM-Drizzle%20ORM-C5F74F?logo=drizzle&logoColor=black)](https://orm.drizzle.team)
-[![Android Min SDK](https://img.shields.io/badge/Min%20SDK-26-34A853?logo=android&logoColor=white)](https://developer.android.com)
-[![Target SDK](https://img.shields.io/badge/Target%20SDK-34-4285F4?logo=android&logoColor=white)](https://developer.android.com)
-[![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20BOM-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![Node.js](https://img.shields.io/badge/Server-Node.js%20TypeScript-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![Render](https://img.shields.io/badge/Render-Live%20Demo-46E3B7?logo=render&logoColor=black)](https://flexifeed-studio.onrender.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**FlexiFeed Studio** is an end-to-end **Server-Driven UI (SDUI)** platform for modern e-commerce experiences. It combines a high-performance **Android client built with Jetpack Compose** and a **Modular TypeScript SDUI Server & Web Studio Backoffice** connected via real-time Server-Sent Events (SSE). 
+**FlexiFeed Studio** is an end-to-end **Server-Driven UI (SDUI)** platform for modern e-commerce experiences. It combines a high-performance cross-platform mobile client built with **Kotlin Multiplatform (KMP) & Compose Multiplatform (CMP)** targeting **Android and iOS** (>95% shared UI and business logic) with a **Modular TypeScript SDUI Server & Web Studio Backoffice** connected via real-time Server-Sent Events (SSE).
 
-With FlexiFeed Studio, engineering, product, and marketing teams can instantly compose layouts, roll out marketing campaigns, customize branding themes, and adjust UI hierarchies in real-time—**without releasing an app update to Google Play**.
+With FlexiFeed Studio, engineering, product, and marketing teams can instantly compose layouts, roll out marketing campaigns, customize branding themes, and adjust UI hierarchies in real-time—**without releasing an app update to Google Play or Apple App Store**.
 
 ---
 
@@ -29,17 +30,30 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
 
 <br />
 
-### 📱 2. Android Compose Client (Seamless Real-Time Experience)
+### 📱 2. Cross-Platform Mobile Client (Android & iOS)
 <div align="center">
   <img src="docs/media/demo.gif" alt="FlexiFeed Mobile App Live Demo" width="340" style="border-radius: 16px; box-shadow: 0 10px 35px rgba(0,0,0,0.15);" />
-  <p><em>Android App: Instant Hot-Reloading from SSE stream, Multi-Screen SDUI Navigation (Clean Native Transitions), Interactive Cart State, and State Caching</em></p>
+  <p><em>Mobile Client: Compose Multiplatform running seamlessly across Android and iOS with instant SSE Hot-Reloading, Multi-Screen SDUI Navigation, and In-App Network Inspection</em></p>
 </div>
 
 ---
 
 ## ✨ Key Features
 
-- ⚡ **Real-Time Live Stream Hot-Reload (SSE):** Streaming updates via `/api/v1/feed-stream`. Switching presets or modifying DSL on the Web Studio instantly re-renders the Android app without cold restarts.
+- ⚡ **Real-Time Live Stream Hot-Reload (SSE):** Streaming updates via `/api/v1/feed-stream`. Switching presets or modifying DSL on the Web Studio instantly re-renders both Android and iOS apps without cold restarts.
+- 🌐 **Kotlin Multiplatform & Compose Multiplatform (>95% Shared Code):**
+  - All UI composables, MVI ViewModels, Ktor HTTP & SSE network clients, and Koin dependency injection live in `commonMain`.
+  - Pixel-perfect native UI and animations across Android and iOS.
+- 🍎 **Zero-CocoaPods Native iOS Architecture:**
+  - Pure Swift Xcode project (`iosApp.xcodeproj`) with native SwiftUI hosting `MainViewController`.
+  - Zero CocoaPods, zero Podfiles, and zero third-party iOS package overhead.
+- 🧭 **Multi-Environment Support (Local, Dev, Prod):**
+  - **Android:** First-class Gradle build flavors (`devDebug`, `localDebug`, `prodRelease`).
+  - **iOS:** Native Xcode shared schemes (`iosApp (Dev)`, `iosApp (Local)`, `iosApp (Prod)`) with runtime dynamic environment resolution.
+- 🔍 **In-App Network Inspector Sheet (Cross-Platform):**
+  - Built-in debug inspector sheet accessible via the `[i]` top app bar badge on both Android and iOS.
+  - Live inspection of HTTP REST calls and SSE stream chunks with latency, status codes, and JSON viewer.
+  - Integrated with **Chucker** on Android for rich push notifications.
 - 🔷 **Modular TypeScript SDUI Backend:** Clean, domain-driven architecture organized into `types/`, `config/`, `data/`, `services/`, and `routes/` with strict type safety and zero external runtime dependencies.
 - 🎨 **Dynamic Logo & Feed Theming:** Granular control over primary colors, accent colors, light/dark modes, and dedicated logo theme styling (background, icon, title, and subtitle colors).
 - 📱 **Multi-Screen SDUI Navigation:** Seamless native navigation across screens (`HOME_FEED`, `PRODUCT_DETAIL` like `product_201`, and `CAMPAIGN` feeds like `campaign_gadget_expo`) using Jetpack Navigation Compose with clean transitions and zero popup obstructions.
@@ -50,39 +64,49 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
   - `ADD_TO_CART`: Cart mutation and local inventory synchronization.
   - `ANALYTICS`: Event tracking dispatched to `AnalyticsTracker`.
 - 💻 **Responsive Studio Backoffice:** Sleek, responsive web backoffice built with modern CSS/JS to inspect payloads, preview presets, and broadcast live hot-reloads.
-- 🧪 **Clean Architecture & 100% Test Coverage:** Lean Clean Architecture without UseCase boilerplate. All 28 unit tests pass with a 100% success rate.
-- 🛠️ **Developer Tooling & Makefile:** Comprehensive CLI automation with `make` targets for Android testing/building, TypeScript compilation, and local server execution.
+- 🧪 **Clean Architecture & 100% Test Coverage:** Lean Clean Architecture without UseCase boilerplate. All 28 unit tests pass with a 100% success rate in `commonTest`.
+- 🛠️ **Developer Tooling & Makefile:** Comprehensive CLI automation with `make` targets for Android, iOS, TypeScript server, and local database.
 
 ---
 
 ## 🏛️ System Architecture
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│               TypeScript Studio Backoffice                  │
-│   (Port 8080: Web Backoffice GUI + REST API + SSE Stream)   │
-└──────────────┬───────────────────────────────┬──────────────┘
-               │ HTTP GET /api/v1/home-feed    │ SSE /api/v1/feed-stream
-               ▼                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    SDUIRepositoryImpl                       │
-│  (Retrofit SDUIApi with Graceful MockSDUIService Fallback)  │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ Flow / Result<SDUIScreen>
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      HomeViewModel                          │
-│   (MVI Pattern, viewModelScope, Cached Home Feed State)     │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ StateFlow<HomeUiState>
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  FlexiFeedNavGraph (UI)                     │
-│  ├── HomeScreen (SDUIRenderer + SDUICommonSheets)           │
-│  └── SDUIGenericScreen (Dynamic Detail & Campaign Screens)  │
-│        ├── ComponentRegistry  ──> [ Carousel | Grid | Row ] │
-│        └── ActionDispatcher   ──> [ Navigate | Cart | Log ] │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                      TypeScript Studio Backoffice                      │
+│        (Port 8080: Web Backoffice GUI + REST API + SSE Stream)         │
+└───────────────────┬────────────────────────────────┬───────────────────┘
+                    │ HTTP GET /api/v1/home-feed     │ SSE /api/v1/feed-stream
+                    ▼                                ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   commonMain: SDUIRepositoryImpl                       │
+│        • Ktor SDUIApi with Graceful MockSDUIService Fallback           │
+│        • NetworkLogCollector (HTTP & SSE Debug History)                │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Flow / Result<SDUIScreen>
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                 commonMain: HomeViewModel & CartViewModel              │
+│        • MVI Pattern, viewModelScope, Cached Home Feed State           │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ StateFlow<HomeUiState>
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                 commonMain: Compose Multiplatform UI                   │
+│  ├── HomeScreen (SDUIRenderer + SDUICommonSheets)                      │
+│  ├── NetworkInspectorSheet (Interactive Debug HTTP / SSE Inspector)    │
+│  └── SDUIGenericScreen (Dynamic Detail & Campaign Screens)             │
+│        ├── ComponentRegistry  ──> [ Carousel | Grid | Row | Card ]    │
+│        └── ActionDispatcher   ──> [ Navigate | Cart | Analytics ]      │
+└───────────────────┬────────────────────────────────┬───────────────────┘
+                    │                                │
+                    ▼                                ▼
+┌──────────────────────────────────────┐ ┌───────────────────────────────┐
+│        androidMain (Android)         │ │         iosMain (iOS)         │
+│  • MainActivity (ComponentActivity)  │ │  • MainViewController        │
+│  • Chucker Interceptor Notification  │ │  • Pure Swift / SwiftUI Host  │
+│  • Flavors: dev / local / prod       │ │  • Schemes: Dev / Local / Prod│
+└──────────────────────────────────────┘ └───────────────────────────────┘
 ```
 
 ---
@@ -174,63 +198,52 @@ Example payload returned from `/api/v1/home-feed`:
 
 ```text
 flexifeed-studio/
-├── Makefile                       # Developer command runner (build, test, server, db)
-├── .github/workflows/ci.yml       # GitHub Actions CI (master & develop multi-stage workflow)
+├── Makefile                       # Developer command runner (Android, iOS, Server, DB)
+├── .github/workflows/ci.yml       # GitHub Actions CI (multi-stage verification)
 ├── AGENTS.md                      # Agent & Developer Guidelines (TDD/TDG & Architecture Rules)
+├── .agents/skills/mobile/         # Mobile Runbook Skill (Android & iOS Workflows)
 ├── neon.ts                        # Neon Cloud Serverless PostgreSQL configuration
 ├── render.yaml                    # Render.com Cloud Blueprint deployment specification
 ├── docker-compose.yml             # Local PostgreSQL 16 container definition
 ├── docs/media/                    # Demo Media Assets (backoffice-demo.gif, demo.gif)
 ├── server/                        # Modular TypeScript SDUI Backend & Web Studio
 │   ├── src/
-│   │   ├── types/
-│   │   │   ├── sdui.types.ts      # SDUI Schema contracts (Screen, Theme, Action, Node)
-│   │   │   └── server.types.ts    # HTTP handlers, SSE events, and Preset models
-│   │   ├── config/
-│   │   │   └── constants.ts       # PORT, directory paths, MIME types, CORS headers
-│   │   ├── db/
-│   │   │   ├── schema.ts          # Drizzle ORM PostgreSQL schema (screens, presets, settings)
-│   │   │   ├── index.ts           # Neon & node-postgres client pool connection manager
-│   │   │   └── seed.ts            # Database seeder for baseline presets & fallback screens
-│   │   ├── data/
-│   │   │   ├── defaultScreens.ts  # Fallback screens (product_101, 201, campaigns)
-│   │   │   ├── defaultPresets.ts  # Baseline presets with full logo theming
-│   │   │   └── feedStore.ts       # Hybrid Data layer (PostgreSQL + local JSON fallback)
-│   │   ├── services/
-│   │   │   └── sseService.ts      # Live Hot-Reload SSE connection manager & heartbeat
-│   │   ├── routes/
-│   │   │   ├── apiRoutes.ts       # /api/v1/* endpoints (home-feed, theme, preset, reset)
-│   │   │   └── staticRoutes.ts    # Web Studio static asset server (public/)
-│   │   └── server.ts              # HTTP router dispatcher, lifecycle & startup banners
+│   │   ├── types/                 # SDUI Schema contracts (Screen, Theme, Action, Node)
+│   │   ├── config/                # PORT, directory paths, MIME types, CORS headers
+│   │   ├── db/                    # Drizzle ORM PostgreSQL schema & seeders
+│   │   ├── data/                  # Fallback screens & default presets
+│   │   ├── services/              # Live Hot-Reload SSE manager & heartbeat
+│   │   ├── routes/                # REST API endpoints & Web Studio static server
+│   │   └── server.ts              # HTTP router dispatcher & startup banners
 │   ├── data/                      # Persistent active feed.json & presets directory
-│   ├── public/                    # Responsive Studio Backoffice with live theme & logo controls
+│   ├── public/                    # Responsive Studio Backoffice GUI
 │   ├── dist/                      # Compiled production JavaScript output
-│   ├── tsconfig.json              # Strict TypeScript compiler configuration
-│   └── package.json               # Scripts (build, start, serve, dev, typecheck, test, db:*)
-└── FlexiFeed/                     # Android Application (Jetpack Compose)
-    └── app/src/main/java/com/flexifeed/app/
-        ├── data/
-        │   ├── model/             # SDUIDTO.kt (Data Transfer Objects & Parsers)
-        │   ├── remote/            # SDUIApi.kt (Retrofit) & MockSDUIService.kt
-        │   └── repository/        # SDUIRepositoryImpl.kt (Live + Mock Fallback)
-        ├── domain/
-        │   ├── model/             # SDUINode.kt, SDUIScreen.kt, SDUIConstants.kt
-        │   ├── action/            # SDUIAction.kt, AnalyticsTracker.kt
-        │   └── repository/        # SDUIRepository.kt (Interface)
-        ├── di/                    # AppModules.kt (Koin Dependency Injection)
-        └── ui/
-            ├── components/        # Carousel, Grid, HorizontalList, AtomicComponents
-            ├── home/              # HomeScreen, HomeViewModel, CartViewModel, Logo
-            ├── navigation/        # FlexiFeedNavGraph.kt (Jetpack Navigation Compose)
-            ├── sdui/              # SDUIRenderer, ComponentRegistry, ActionDispatcher, CommonSheets
-            └── theme/             # Material 3 Color, Typography, Shape, Theme
+│   └── package.json               # Node.js scripts (build, start, serve, dev, db:*)
+└── FlexiFeed/                     # Cross-Platform Mobile Client (KMP & CMP)
+    ├── app/
+    │   ├── build.gradle.kts       # KMP Multiplatform Gradle config (Android & iOS targets)
+    │   └── src/
+    │       ├── commonMain/kotlin/ # Shared Compose UI, MVI, Ktor, Koin, NetworkLogCollector
+    │       │   ├── App.kt         # Root Multiplatform Composable
+    │       │   ├── data/          # SDUIApi, SDUIStreamService, Repositories
+    │       │   ├── di/            # AppModules.kt (Shared Koin Dependency Injection)
+    │       │   ├── domain/        # SDUINode, SDUIConstants, Actions, Analytics
+    │       │   ├── ui/            # Compose Screens, SDUIRenderer, ComponentRegistry, Sheets
+    │       │   └── util/          # NetworkLogCollector, PlatformTime
+    │       ├── androidMain/       # Android Entry (MainActivity, FlexiFeedApp, Chucker)
+    │       ├── iosMain/           # iOS Entry (MainViewController, PlatformModule)
+    │       └── commonTest/        # Cross-Platform Unit Tests (100% Pass Rate)
+    └── iosApp/                    # Native Xcode Project (Zero CocoaPods)
+        ├── iosApp.xcodeproj/      # Xcode project & Schemes: Dev, Local, Prod
+        ├── iosApp/                # SwiftUI Host (ContentView, iOSApp, Info.plist)
+        └── build_ios.sh           # CLI build script for iOS simulator
 ```
 
 ---
 
 ## 🛠️ Makefile Command Runner
 
-FlexiFeed includes a convenient `Makefile` to streamline everyday development workflows:
+FlexiFeed includes a unified `Makefile` for streamlined development across Android, iOS, Server, and Database:
 
 ```bash
 # Display help and available commands
@@ -239,14 +252,25 @@ make help
 
 | Target | Description |
 | :--- | :--- |
-| **`make help`** | Displays the styled help menu with all available targets |
-| **`make test`** | Runs all 28 Android Unit Tests across MVI, DI, and Repositories |
+| **`make help`** | Displays styled help menu with all available targets |
+| **`make test`** | Runs all 28 Cross-Platform Unit Tests (`commonTest`) |
 | **`make build`** | Assembles the Android Dev-Debug APK |
-| **`make install`** | Installs Dev-Debug APK onto a connected device or emulator |
-| **`make launch`** | Launches MainActivity on the connected device via ADB |
+| **`make install`** | Installs Dev-Debug APK onto connected Android device or emulator |
+| **`make launch`** | Launches Android MainActivity via ADB |
+| **`make test-local`** | Runs Android Unit Tests against the Local server flavor |
+| **`make build-local`** | Assembles Android Local-Debug APK (`http://10.0.2.2:8080/`) |
+| **`make install-local`** | Installs Local-Debug APK onto connected emulator |
+| **`make launch-local`** | Launches Android Local variant via ADB |
+| **`make ios-open`** | Opens native iOS Xcode project (`iosApp.xcodeproj`) in Xcode |
+| **`make ios-build`** | Compiles iOS application for Simulator via `xcodebuild` |
 | **`make server-install`** | Installs Node.js server dependencies |
 | **`make server-build`** | Compiles TypeScript SDUI server to `dist/` using `tsc` |
 | **`make server`** | Starts the TypeScript SDUI Server and Web Studio (port 8080) |
+| **`make db-up`** | Starts local PostgreSQL container via Docker Compose |
+| **`make db-down`** | Stops local PostgreSQL container |
+| **`make db-push`** | Pushes Drizzle schema to PostgreSQL (auto-migrates tables) |
+| **`make db-seed`** | Seeds SDUI presets, screens, and settings into PostgreSQL |
+| **`make db-studio`** | Opens Drizzle Studio visual database inspector in browser |
 | **`make clean`** | Cleans Gradle and build caches across the monorepo |
 | **`make all`** | Installs server deps, runs unit tests, and builds APK |
 
@@ -272,12 +296,13 @@ npm start        # Runs TypeScript server directly via tsx
 - 🌐 **Web Studio Backoffice**: [https://flexifeed-studio.onrender.com](https://flexifeed-studio.onrender.com) *(Local: [http://localhost:8080](http://localhost:8080))*
 - 📡 **SDUI API Endpoint**: `https://flexifeed-studio.onrender.com/api/v1/home-feed` *(Local: `http://localhost:8080/api/v1/home-feed`)*
 - ⚡ **Live SSE Stream**: `https://flexifeed-studio.onrender.com/api/v1/feed-stream` *(Local: `http://localhost:8080/api/v1/feed-stream`)*
-- 📱 **Android Emulator Host**: `http://10.0.2.2:8080/api/v1/home-feed` *(Or point directly to live Render domain)*
 
-### 2. Run the Android Application
-Open the project in Android Studio or use the Makefile / Gradle wrapper:
+---
+
+### 2. Run on Android
+Open `FlexiFeed/` in Android Studio or run via Makefile / Gradle:
 ```bash
-# Run Unit Tests (28/28 tests passing)
+# Run Cross-Platform Unit Tests (28/28 tests passing)
 make test
 # (or: cd FlexiFeed && ./gradlew testDevDebugUnitTest)
 
@@ -290,22 +315,63 @@ make launch
 
 ---
 
+### 3. Run on iOS (Zero CocoaPods)
+FlexiFeed on iOS does not require `pod install` or third-party package setup.
+
+#### Option A: Using Xcode GUI
+```bash
+# Open Xcode Project
+make ios-open
+# (or: open FlexiFeed/iosApp/iosApp.xcodeproj)
+```
+1. Select the scheme:
+   - **`iosApp (Dev)`** (Default) — Connects to Render cloud backend (`https://flexifeed-studio.onrender.com/`)
+   - **`iosApp (Local)`** — Connects to local Node server (`http://localhost:8080/`)
+   - **`iosApp (Prod)`** — Connects to production backend
+2. Select any iOS Simulator (e.g., iPhone 16) and press **Run (`⌘ + R`)**.
+
+#### Option B: Using Command Line (CLI)
+```bash
+# Build for iOS Simulator (Dev scheme)
+make ios-build
+# (or: cd FlexiFeed/iosApp && ./build_ios.sh)
+```
+
+---
+
+## 🔍 In-App Network Inspector Sheet (Debug Tool)
+
+Both Android and iOS feature an interactive in-app network debugging console:
+1. Tap the **`[i] <count>`** badge in the top right corner of the home bar.
+2. Inspect all recorded HTTP REST requests and real-time SSE stream events.
+3. Review method, status code (`200 OK`, `404`, etc.), duration latency (ms), and JSON payloads.
+4. On Android, debug traffic is also emitted to **Chucker** for system notification inspection.
+
+---
+
 ## 🧪 Testing & Verification
 
 FlexiFeed adheres strictly to **Test-Driven Generation & Development (TDG / TDD)**:
 
-### 1. Android Unit Tests (28/28 Passing)
+### 1. Cross-Platform Mobile Unit Tests (28/28 Passing)
 ```bash
 make test
 # or: cd FlexiFeed && ./gradlew testDevDebugUnitTest
 ```
-**100% Pass Rate (28 of 28 tests)** covering:
+**100% Pass Rate (28 of 28 tests)** located in `FlexiFeed/app/src/commonTest/`:
 - `HomeMviTest`: Verifies MVI state hoisting, intent events, and state mutations.
 - `CartAndDITest`: Tests Cart ViewModel item additions, quantity steppers, and Koin DI.
 - `SDUIRepositoryTest`: Tests live network fetching and graceful offline mock fallback.
 - `SDUIActionContractsTest`: Validates SDUI Action payloads, parameters, and type safety.
+- `ComponentRegistryTest`: Validates component rendering and unknown component fallbacks.
 
-### 2. Backend TypeScript & DSL Verification
+### 2. iOS Xcode Build Verification
+```bash
+make ios-build
+```
+- Validates pure Swift compilation, framework embedding, and zero sandbox violations.
+
+### 3. Backend TypeScript & DSL Verification
 ```bash
 cd server
 npm test
@@ -318,28 +384,25 @@ npm test
 ## 🔄 Continuous Integration (CI)
 
 Every pull request and push to `master` and `develop` is automatically validated via GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
-- **Android CI:** Runs on JDK 17 with Gradle action caching, executes all 28 unit tests (`testDevDebugUnitTest`), compiles the Dev-Debug APK (`assembleDevDebug`), and uploads artifacts for test reports and binaries.
-- **Server CI:** Sets up Node.js 22, installs dependencies (`npm ci`), performs strict TypeScript compilation and type checks (`npm run build` & `npm run typecheck`), and validates SDUI JSON DSL schema integrity and logo theme completeness.
+- **Mobile CI:** Runs on JDK 17 with Gradle caching, executes all 28 cross-platform unit tests (`testDevDebugUnitTest`), compiles Dev-Debug APK (`assembleDevDebug`), and uploads build artifacts.
+- **Server CI:** Sets up Node.js 22, installs dependencies (`npm ci`), performs strict TypeScript compilation (`npm run build` & `npm run typecheck`), and validates SDUI JSON DSL schema integrity and logo theme completeness.
 
 ---
 
 ## 🌿 Git Branching Strategy
 
-FlexiFeed Studio maintains a streamlined branching strategy to guarantee stability:
+FlexiFeed Studio maintains a streamlined branching strategy:
 - **`master`**: Production-ready branch. Code here is tested, stable, and ready for deployment.
-- **`develop`**: Active integration and development branch. All feature work, bug fixes, and development pull requests are committed and verified on `develop` before merging into `master`.
+- **`develop`**: Active integration branch. All feature work and bug fixes are committed and verified on `develop` before merging into `master`.
+- **`feat/kmp-multiplatform`**: Active branch for Kotlin Multiplatform & Compose Multiplatform client.
 
 ---
 
 ## 📜 Agent & Developer Guidelines
 
-Guidelines and constraints for AI agents and developers working in this repository are documented in **[AGENTS.md](AGENTS.md)**:
-1. **Thought Process Before Implementation**: Present a 4-step solution plan (*Restate, Approach, Tradeoffs, Stop & Ask*) and await approval before modifying code.
-2. **Drive Code with TDG/TDD**: Write or update tests before feature implementation or bug fixes.
-3. **Clean Architecture without UseCases**: ViewModels interact directly with Repositories.
-4. **Type-Safe SDUI Contracts**: Use `SDUIConstants`—never use magic strings.
-
----
+Guidelines and specialized runbooks are available in the repository:
+- **[AGENTS.md](AGENTS.md)**: Architecture standards, TDD/TDG protocol, MVI state contracts, and component registry rules.
+- **[.agents/skills/mobile/SKILL.md](.agents/skills/mobile/SKILL.md)**: Comprehensive runbook covering Android & iOS build commands, ADB/simctl automation, multi-environment schemes, and debug network inspection.
 
 ---
 
@@ -408,7 +471,7 @@ The server is actively deployed at:
 - **SDUI Home Feed API:** [`https://flexifeed-studio.onrender.com/api/v1/home-feed`](https://flexifeed-studio.onrender.com/api/v1/home-feed)
 - **Real-Time Live SSE Stream:** [`https://flexifeed-studio.onrender.com/api/v1/feed-stream`](https://flexifeed-studio.onrender.com/api/v1/feed-stream)
 
-The repository includes a [render.yaml](render.yaml) blueprint for 1-click deployment or manual web service setup:
+The repository includes a [render.yaml](render.yaml) blueprint for 1-click deployment:
 1. Push your repository to GitHub.
 2. In [render.com](https://render.com), create a **New > Web Service** (or **New > Blueprint**).
 3. Connect `flexifeed-studio`. Configuration settings:
@@ -419,12 +482,7 @@ The repository includes a [render.yaml](render.yaml) blueprint for 1-click deplo
 4. Set the `DATABASE_URL` environment variable to your Neon.tech connection string in Render service settings.
 5. Auto-deploy triggers automatically whenever commits are merged into `master`.
 
-### 3. Connecting Android Client to Live Cloud Backend
-To point your Android application directly to the live Render deployment instead of the local emulator loopback:
-In [FlexiFeed/app/build.gradle.kts](FlexiFeed/app/build.gradle.kts):
-```kotlin
-buildConfigField("String", "SDUI_BASE_URL", "\"https://flexifeed-studio.onrender.com/\"")
-```
+---
 
 ## 📄 License
 
