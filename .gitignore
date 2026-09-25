@@ -1,5 +1,6 @@
 *.iml
 .gradle/
+.kotlin/
 **/build/
 local.properties
 .idea/
@@ -12,3 +13,25 @@ local.properties
 .env.local
 node_modules/
 skills-lock.json
+
+# Xcode & Apple
+iosApp/build/
+iosApp/DerivedData/
+*.xcuserstate
+project.xcworkspace/xcuserdata/
+xcuserdata/
+DerivedData/
+*.hmap
+*.xccheckout
+*.moved-aside
+*.ipa
+
+# Secrets & Environment
+*.env
+*.env.*
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+secrets/
