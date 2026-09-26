@@ -30,10 +30,21 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
 
 <br />
 
-### 📱 2. Cross-Platform Mobile Client (Android & iOS)
+### 📱 2. Cross-Platform Mobile Client (Android & iOS Dual-Platform)
 <div align="center">
-  <img src="docs/media/demo.gif" alt="FlexiFeed Mobile App Live Demo" width="340" style="border-radius: 16px; box-shadow: 0 10px 35px rgba(0,0,0,0.15);" />
-  <p><em>Mobile Client: Compose Multiplatform running seamlessly across Android and iOS with instant SSE Hot-Reloading, Multi-Screen SDUI Navigation, and In-App Network Inspection</em></p>
+  <table style="border: none; background: transparent;">
+    <tr style="border: none; background: transparent;">
+      <td align="center" style="border: none; padding: 12px;">
+        <img src="docs/media/demo.gif" alt="FlexiFeed Android Live Demo" width="310" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+        <br /><strong>🤖 Android Compose Client</strong>
+      </td>
+      <td align="center" style="border: none; padding: 12px;">
+        <img src="docs/media/ios-demo.png" alt="FlexiFeed iOS Compose Multiplatform Demo" width="310" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+        <br /><strong>🍎 iOS Compose Multiplatform Client</strong>
+      </td>
+    </tr>
+  </table>
+  <p><em>Single Codebase (>95% Shared in <code>commonMain</code>): Compose Multiplatform running natively across Android and iOS with instant SSE Hot-Reloading, Multi-Environment Schemes, and In-App Network Inspector</em></p>
 </div>
 
 ---
@@ -296,6 +307,9 @@ npm start        # Runs TypeScript server directly via tsx
 - 🌐 **Web Studio Backoffice**: [https://flexifeed-studio.onrender.com](https://flexifeed-studio.onrender.com) *(Local: [http://localhost:8080](http://localhost:8080))*
 - 📡 **SDUI API Endpoint**: `https://flexifeed-studio.onrender.com/api/v1/home-feed` *(Local: `http://localhost:8080/api/v1/home-feed`)*
 - ⚡ **Live SSE Stream**: `https://flexifeed-studio.onrender.com/api/v1/feed-stream` *(Local: `http://localhost:8080/api/v1/feed-stream`)*
+
+> [!NOTE]
+> **Zero-Setup Evaluation & Security:** The repository includes a public client demo config (`google-services.json`) and graceful offline mock fallbacks, allowing anyone to clone, run, and test immediately without configuring a private Firebase project. Per Google/Firebase security standards, client configuration keys are public client identifiers and do not expose backend credentials or private data.
 
 ---
 
