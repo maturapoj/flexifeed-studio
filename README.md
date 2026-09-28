@@ -39,7 +39,7 @@ With FlexiFeed Studio, engineering, product, and marketing teams can instantly c
         <br /><strong>🤖 Android Compose Client</strong>
       </td>
       <td align="center" style="border: none; padding: 12px;">
-        <img src="docs/media/ios-demo.png" alt="FlexiFeed iOS Compose Multiplatform Demo" width="310" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
+        <img src="docs/media/ios-demo.gif" alt="FlexiFeed iOS Compose Multiplatform Demo" width="310" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" />
         <br /><strong>🍎 iOS Compose Multiplatform Client</strong>
       </td>
     </tr>
